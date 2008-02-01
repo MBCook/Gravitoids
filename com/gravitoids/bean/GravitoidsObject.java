@@ -13,6 +13,16 @@ public abstract class GravitoidsObject {
 
 	private double mass;
 	
+	private boolean moveable;
+	
+	public boolean isMoveable() {
+		return moveable;
+	}
+
+	public void setMoveable(boolean moveable) {
+		this.moveable = moveable;
+	}
+
 	public double getMass() {
 		return mass;
 	}
@@ -62,10 +72,12 @@ public abstract class GravitoidsObject {
 	}
 
 	public void move() {
-		// Just use our speed to move, that's it, we're easy
-		
-		xPosition += xSpeed;
-		yPosition += ySpeed;
+		if (moveable) {
+			// Just use our speed to move, that's it, we're easy
+			
+			xPosition += xSpeed;
+			yPosition += ySpeed;
+		}
 	}
 
 	public abstract void draw(Graphics g);

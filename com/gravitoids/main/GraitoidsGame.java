@@ -14,7 +14,7 @@ public class GraitoidsGame extends JFrame implements WindowListener {
 	private GravitoidsPanel gp;
 
 	public GraitoidsGame(long period) {
-		super("The Pond Game");
+		super("Gravitoids");
 		makeGUI(period);
 
 		addWindowListener(this);
@@ -37,7 +37,7 @@ public class GraitoidsGame extends JFrame implements WindowListener {
 	}
 
 	public void windowDeactivated(WindowEvent e) {
-		gp.pauseGame();
+	//	gp.pauseGame();
 	}
 
 

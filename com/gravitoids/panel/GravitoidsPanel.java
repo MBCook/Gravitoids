@@ -15,6 +15,7 @@ import java.text.DecimalFormat;
 import javax.swing.JPanel;
 
 import com.gravitoids.bean.GravitoidsCircleObject;
+import com.gravitoids.bean.GravitoidsObject;
 import com.gravitoids.helper.GravityHelper;
 import com.gravitoids.main.GraitoidsGame;
 
@@ -68,6 +69,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private GravitoidsCircleObject objectOne;
 	private GravitoidsCircleObject objectTwo;
 	private GravitoidsCircleObject objectThree;
+	private GravitoidsCircleObject objectFour;
+	
 
 	// Off screen rendering
 
@@ -92,6 +95,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectOne = new GravitoidsCircleObject();
 		objectTwo = new GravitoidsCircleObject();
 		objectThree = new GravitoidsCircleObject();
+		objectFour = new GravitoidsCircleObject();
 		
 		objectOne.setColor(Color.DARK_GRAY);
 		objectOne.setMass(100.0);
@@ -100,6 +104,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectOne.setYSpeed(0.0);
 		objectOne.setXPosition(320.0);
 		objectOne.setYPosition(340.0);
+		objectOne.setMoveable(true);
 
 		objectTwo.setColor(Color.GRAY);
 		objectTwo.setMass(100.0);
@@ -108,6 +113,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectTwo.setYSpeed(0.0);
 		objectTwo.setXPosition(40.0);
 		objectTwo.setYPosition(40.0);
+		objectTwo.setMoveable(true);
 		
 		objectThree.setColor(Color.PINK);
 		objectThree.setMass(100.0);
@@ -116,6 +122,16 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectThree.setYSpeed(0.0);
 		objectThree.setXPosition(600.0);
 		objectThree.setYPosition(240.0);
+		objectThree.setMoveable(true);
+		
+		objectFour.setColor(Color.GREEN);
+		objectFour.setMass(1.0);
+		objectFour.setRadius(6.0);
+		objectFour.setXSpeed(0.0);
+		objectFour.setYSpeed(0.0);
+		objectFour.setXPosition(400.0);
+		objectFour.setYPosition(400.0);
+		objectFour.setMoveable(true);
 		
 		// Set up the mouse
 
@@ -288,13 +304,42 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			gh.simulateGravity(objectOne, objectTwo);
 			gh.simulateGravity(objectTwo, objectThree);
 			gh.simulateGravity(objectOne, objectThree);
+			gh.simulateGravity(objectOne, objectFour);
+			gh.simulateGravity(objectTwo, objectFour);
+			gh.simulateGravity(objectThree, objectFour);
 			
 			objectOne.move();
 			objectTwo.move();
 			objectThree.move();
+			objectFour.move();
+			
+			checkBounds(objectOne);
+			checkBounds(objectTwo);
+			checkBounds(objectThree);
+			checkBounds(objectFour);
 		}
 	}
 
+	private void checkBounds(GravitoidsObject object) {
+		// Check the object against the bounds of (the) reality
+		
+		if (object.getXPosition() < 0) {
+			object.setXPosition(0);
+			object.setXSpeed(0);
+		} else if (object.getXPosition() > PANEL_WIDTH) {
+			object.setXPosition(PANEL_WIDTH);
+			object.setXSpeed(0);
+		}
+		
+		if (object.getYPosition() < 0) {
+			object.setYPosition(0);
+			object.setYSpeed(0);
+		} else if (object.getYPosition() > PANEL_HEIGHT) {
+			object.setYPosition(PANEL_HEIGHT);
+			object.setYSpeed(0);
+		}
+	}
+	
 	private void gameRender() {
 		// Time to draw everything. First we'll setup the double-buffering image if needed.
 		
@@ -321,6 +366,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectOne.draw(dbg);
 		objectTwo.draw(dbg);
 		objectThree.draw(dbg);
+		objectFour.draw(dbg);
 		
 		if (isPaused) {
 			drawPaused(dbg);
