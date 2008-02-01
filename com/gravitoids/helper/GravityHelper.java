@@ -4,7 +4,7 @@ import com.gravitoids.bean.GravitoidsObject;
 
 public class GravityHelper {
 	private static GravityHelper instance = null;
-	private double maxInfluence = 1.0d;
+	private double maxInfluence = 5.0d;
 	private double gravitationalConstant;
 	
 	public static synchronized GravityHelper getInstance() {
