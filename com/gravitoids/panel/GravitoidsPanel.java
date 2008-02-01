@@ -98,8 +98,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		objectFour = new GravitoidsCircleObject();
 		
 		objectOne.setColor(Color.DARK_GRAY);
-		objectOne.setMass(100.0);
-		objectOne.setRadius(16.0);
+		objectOne.setMass(1000.0);
+		objectOne.setRadius(32.0);
 		objectOne.setXSpeed(0.0);
 		objectOne.setYSpeed(0.0);
 		objectOne.setXPosition(320.0);
@@ -175,7 +175,25 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			(keyCode == KeyEvent.VK_UP) || 
 			(keyCode == KeyEvent.VK_DOWN)) {
 
-			//moveFrog(keyCode);
+			GravityHelper instance = GravityHelper.getInstance();
+			
+			if (keyCode == KeyEvent.VK_LEFT) {
+				instance.setGravitationalConstant(instance.getGravitationalConstant() - 1.0);
+				
+				System.out.println("Gravitational constant is now " + instance.getGravitationalConstant());
+			} else if (keyCode == KeyEvent.VK_RIGHT) {
+				instance.setGravitationalConstant(instance.getGravitationalConstant() + 1.0);
+				
+				System.out.println("Gravitational constant is now " + instance.getGravitationalConstant());
+			} else if (keyCode == KeyEvent.VK_UP) {
+				instance.setMaxInfluence(instance.getMaxInfluence() + 0.1);
+				
+				System.out.println("Max influence is now " + instance.getMaxInfluence());
+			} else if (keyCode == KeyEvent.VK_DOWN) {
+				instance.setMaxInfluence(instance.getMaxInfluence() - 0.1);
+				
+				System.out.println("Max influence is now " + instance.getMaxInfluence());
+			}
 		}
 	}
 

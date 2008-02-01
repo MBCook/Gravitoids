@@ -4,9 +4,7 @@ import com.gravitoids.bean.GravitoidsObject;
 
 public class GravityHelper {
 	private static GravityHelper instance = null;
-	
-	private static final double MAX_INFLUENCE = 1.0d;
-	
+	private double maxInfluence = 1.0d;
 	private double gravitationalConstant;
 	
 	public static synchronized GravityHelper getInstance() {
@@ -52,8 +50,8 @@ public class GravityHelper {
 		
 		double forceOfGravity = (gravitationalConstant * massProduct) / (distance * distance);
 		
-		if (forceOfGravity > MAX_INFLUENCE)
-			forceOfGravity = MAX_INFLUENCE;
+		if (forceOfGravity > maxInfluence)
+			forceOfGravity = maxInfluence;
 		
 		// Now the angle between the two things
 		
@@ -71,5 +69,33 @@ public class GravityHelper {
 		
 		two.setXSpeed(two.getXSpeed() - (xForce / two.getMass()));
 		two.setYSpeed(two.getYSpeed() - (yForce / two.getMass()));
+	}
+
+	/**
+	 * @return the maxInfluence
+	 */
+	public double getMaxInfluence() {
+		return maxInfluence;
+	}
+
+	/**
+	 * @param maxInfluence the maxInfluence to set
+	 */
+	public void setMaxInfluence(double maxInfluence) {
+		this.maxInfluence = maxInfluence;
+	}
+
+	/**
+	 * @return the gravitationalConstant
+	 */
+	public double getGravitationalConstant() {
+		return gravitationalConstant;
+	}
+
+	/**
+	 * @param gravitationalConstant the gravitationalConstant to set
+	 */
+	public void setGravitationalConstant(double gravitationalConstant) {
+		this.gravitationalConstant = gravitationalConstant;
 	}
 }
