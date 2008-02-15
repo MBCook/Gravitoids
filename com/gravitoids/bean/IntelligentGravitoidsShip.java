@@ -32,7 +32,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int CARE_TO_THRUST_B_TERM = 14;
 	private static final int CARE_TO_THRUST_C_TERM = 15;
 	
-	private static final double MAXIMUM_THRUST = 0.5;
+	private static final double MAXIMUM_THRUST = 3.5;
 	
 	private double brain[] = null; 
 	

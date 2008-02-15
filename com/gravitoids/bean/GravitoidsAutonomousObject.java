@@ -42,8 +42,8 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	public void move() {
 		// Use our thrust to alter our speed
 		
-		setXSpeed(getXSpeed() + thrust * xThrustPortion);
-		setYSpeed(getYSpeed() + thrust * yThrustPortion);
+		setXSpeed(getXSpeed() + thrust * xThrustPortion * getSpeedFactor());
+		setYSpeed(getYSpeed() + thrust * yThrustPortion * getSpeedFactor());
 
 		// Now move us based on our speed,
 		

@@ -20,7 +20,7 @@ public class GravitoidsCircleObject extends GravitoidsObject {
 		int r = (int) getRadius();
 		
 		g.setColor(color);
-		g.fillOval(drawX - (r / 2), drawY - (r / 2), r, r);
+		g.fillOval(drawX - (r / 2), drawY - (r / 2), r * 2, r * 2);
 	}
 }
 

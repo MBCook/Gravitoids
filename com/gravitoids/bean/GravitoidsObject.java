@@ -18,6 +18,10 @@ public abstract class GravitoidsObject {
 	
 	private boolean moveable;
 	
+	public final double getSpeedFactor() {
+		return 0.25;
+	}
+	
 	public double getOldXPosition() {
 		return oldXPosition;
 	}
@@ -38,7 +42,9 @@ public abstract class GravitoidsObject {
 		double twoXDelta = other.getXPosition() - other.getOldXPosition();
 		double twoYDelta = other.getYPosition() - other.getOldYPosition();
 		
-		for (double i = 0.25; i <= 1.0; i += 0.25) {
+		double i = 1.0;
+		
+		//for (double i = 0.25; i <= 1.0; i += 0.25) {
 			// X distance between the two at that time point
 			
 			double xDist = ((oneXDelta * i) + getOldXPosition()) - ((twoXDelta * i) + other.getOldXPosition());
@@ -53,9 +59,14 @@ public abstract class GravitoidsObject {
 			
 			if (dist < getRadius() + other.getRadius()) {
 				// Circles overlap, colission
+			
+				System.out.println(getXPosition() + ", " + getYPosition());
+				System.out.println(other.getXPosition() + ", " + other.getYPosition());
+				System.out.println(getRadius() + ", " + other.getRadius());
+
 				return true;
 			}
-		}
+		//}
 		
 		// If we got here, they never collided
 		
@@ -124,8 +135,8 @@ public abstract class GravitoidsObject {
 		if (isMoveable()) {
 			// Just use our speed to move, that's it, we're easy
 			
-			setXPosition(getXPosition() + getXSpeed());
-			setYPosition(getYPosition() + getYSpeed());
+			setXPosition(getXPosition() + getXSpeed() * getSpeedFactor());
+			setYPosition(getYPosition() + getYSpeed() * getSpeedFactor());
 		}
 	}
 

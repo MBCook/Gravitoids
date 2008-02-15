@@ -106,7 +106,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			gco.setColor(getAColorWeLike());					// Gets a color
 			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
-			gco.setRadius(8.0 + Math.floor(Math.random() * 24.0));	// Up to 4 to 32 pixels radius
+			gco.setRadius(4.0 + Math.floor(Math.random() * 12.0));	// Up to 4 to 16 pixels radius
 			gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
 			
 			// Positioning
@@ -138,25 +138,6 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				gco.setXSpeed(0.0);
 				gco.setYSpeed(0.0);
 			}
-		}
-		
-		for (int i = 0; i < 10; i++) {
-			IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
-			
-			igs.setName("Ship " + i);
-			
-			igs.setRadius(10);
-			igs.setMass(1);
-			igs.setMoveable(true);
-			igs.setThrust(0.0);
-			igs.setXPosition(PANEL_WIDTH / 2);
-			igs.setYPosition(PANEL_HEIGHT / 2);
-			igs.setXSpeed(0.0);
-			igs.setYSpeed(0.0);
-			igs.setXThrustPortion(0.0);
-			igs.setXThrustPortion(0.0);
-			
-			ships.add(igs);
 		}
 		
 		// Set up the mouse
@@ -223,12 +204,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			((keyCode == KeyEvent.VK_C) && e.isControlDown()) ) {
 
 			running = false;
-		}
-
-		if ((keyCode == KeyEvent.VK_LEFT) || 
-			(keyCode == KeyEvent.VK_RIGHT) || 
-			(keyCode == KeyEvent.VK_UP) || 
-			(keyCode == KeyEvent.VK_DOWN)) {
+		} else if ((keyCode == KeyEvent.VK_LEFT) || 
+					(keyCode == KeyEvent.VK_RIGHT) || 
+					(keyCode == KeyEvent.VK_UP) || 
+					(keyCode == KeyEvent.VK_DOWN)) {
 
 			GravityHelper instance = GravityHelper.getInstance();
 			
@@ -248,6 +227,25 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				instance.setMaxInfluence(instance.getMaxInfluence() - 0.1);
 				
 				System.out.println("Max influence is now " + instance.getMaxInfluence());
+			}
+		} else if (keyCode == KeyEvent.VK_N) {
+			synchronized (ships) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(10.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);	
 			}
 		}
 	}
@@ -372,57 +370,59 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private void gameUpdate() {
 		if (!isPaused) {
-			GravityHelper gh = GravityHelper.getInstance();
-			
-			// First on our main objects
-			
-			for (int i = 0; i < universeObjects.length - 1; i++) {
-				for (int j = i + 1; j < universeObjects.length; j++) {
-					gh.simulateGravity(universeObjects[i], universeObjects[j]);
-				}
+			synchronized (ships) {
+				GravityHelper gh = GravityHelper.getInstance();
 				
-				for (int j = 0; j < ships.size(); j++) {
-					gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
-				}
-			}
-			
-			// Put them in the right spots
-			
-			for (int i = 0; i < universeObjects.length; i++) {
-				universeObjects[i].move();
-				checkBounds(universeObjects[i]);
-			}
-			
-			// Now simulate our ships
-			
-			Iterator<IntelligentGravitoidsShip> it = ships.iterator();
-			
-			while (it.hasNext()) {
-				IntelligentGravitoidsShip ship = it.next();
+				// First on our main objects
 				
-				ship.prepareMove(universeObjects);
-				ship.move();
-				
-				checkBounds(ship);
-				
-				// Now collision check
-				
-				boolean collided = false;
-				
-				for (int i = 0; i < universeObjects.length; i++) {
-					if (ship.hasCollided(universeObjects[i])) {
-						collided = true;
-						break;
+				for (int i = 0; i < universeObjects.length - 1; i++) {
+					for (int j = i + 1; j < universeObjects.length; j++) {
+						gh.simulateGravity(universeObjects[i], universeObjects[j]);
+					}
+					
+					for (int j = 0; j < ships.size(); j++) {
+						gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
 					}
 				}
 				
-				// Handle any possible collisions
+				// Put them in the right spots
 				
-				if (collided) {
-					it.remove();	// Remove us
-					System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
-				} else {
-					ship.incrementAge();	// Age us					
+				for (int i = 0; i < universeObjects.length; i++) {
+					universeObjects[i].move();
+					checkBounds(universeObjects[i]);
+				}
+				
+				// Now simulate our ships
+				
+				Iterator<IntelligentGravitoidsShip> it = ships.iterator();
+				
+				while (it.hasNext()) {
+					IntelligentGravitoidsShip ship = it.next();
+					
+					ship.prepareMove(universeObjects);
+					ship.move();
+					
+					checkBounds(ship);
+					
+					// Now collision check
+					
+					boolean collided = false;
+					
+					for (int i = 0; i < universeObjects.length; i++) {
+						if (ship.hasCollided(universeObjects[i])) {
+							collided = true;
+							break;
+						}
+					}
+					
+					// Handle any possible collisions
+					
+					if (collided) {
+						it.remove();	// Remove us
+						System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
+					} else {
+						ship.incrementAge();	// Age us					
+					}
 				}
 			}
 		}

@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 import com.gravitoids.panel.GravitoidsPanel;
 
 public class GraitoidsGame extends JFrame implements WindowListener {
-	private static int DEFAULT_FPS = 30;
+	private static int DEFAULT_FPS = 60;
 
 	private GravitoidsPanel gp;
 
