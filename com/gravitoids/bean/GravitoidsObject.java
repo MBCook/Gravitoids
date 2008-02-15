@@ -8,12 +8,59 @@ public abstract class GravitoidsObject {
 	private double xPosition;
 	private double yPosition;
 	
+	private double oldXPosition;	// These are internal, used only to check for collisions between frames
+	private double oldYPosition;
+	
 	private double xSpeed;
 	private double ySpeed;
 
 	private double mass;
 	
 	private boolean moveable;
+	
+	public double getOldXPosition() {
+		return oldXPosition;
+	}
+	
+	public double getOldYPosition() {
+		return oldYPosition;
+	}
+	
+	public boolean hasCollided(GravitoidsObject other) {
+		// TODO: This could be optimized with some simple bounds checks to let us quickly
+		//			rule out any possibility anything ever happened
+		
+		// Check along three points, incase the objects are moving really fast
+		
+		double oneXDelta = getXPosition() - getOldXPosition();
+		double oneYDelta = getYPosition() - getOldYPosition();
+		
+		double twoXDelta = other.getXPosition() - other.getOldXPosition();
+		double twoYDelta = other.getYPosition() - other.getOldYPosition();
+		
+		for (double i = 1.0; i > 0.0; i -= 0.25) {
+			// X distance between the two at that time point
+			
+			double xDist = ((oneXDelta * i) + getXPosition()) - ((twoXDelta * i) + other.getXPosition());
+			
+			// Y distance between the two at that time point
+			
+			double yDist = ((oneYDelta * i) + getYPosition()) - ((twoYDelta * i) + other.getYPosition());
+			
+			// Now the actual distance
+			
+			double dist = Math.sqrt(xDist * xDist + yDist * yDist);
+			
+			if (dist < getRadius() + other.getRadius()) {
+				// Circles overlap, colission
+				return true;
+			}
+		}
+		
+		// If we got here, they never collided
+		
+		return false;
+	}
 	
 	public boolean isMoveable() {
 		return moveable;
@@ -44,6 +91,7 @@ public abstract class GravitoidsObject {
 	}
 
 	public void setXPosition(double position) {
+		oldXPosition = xPosition;
 		xPosition = position;
 	}
 
@@ -60,6 +108,7 @@ public abstract class GravitoidsObject {
 	}
 
 	public void setYPosition(double position) {
+		oldYPosition = yPosition;
 		yPosition = position;
 	}
 
@@ -72,11 +121,11 @@ public abstract class GravitoidsObject {
 	}
 
 	public void move() {
-		if (moveable) {
+		if (isMoveable()) {
 			// Just use our speed to move, that's it, we're easy
 			
-			xPosition += xSpeed;
-			yPosition += ySpeed;
+			setXPosition(getXPosition() + getXSpeed());
+			setYPosition(getYPosition() + getYSpeed());
 		}
 	}
 

@@ -66,11 +66,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private GraitoidsGame gg;
 
-	private GravitoidsCircleObject objectOne;
-	private GravitoidsCircleObject objectTwo;
-	private GravitoidsCircleObject objectThree;
-	private GravitoidsCircleObject objectFour;
-	
+	private GravitoidsCircleObject universeObjects[];
 
 	// Off screen rendering
 
@@ -91,47 +87,53 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		addKeyListener(this);	// Recieve key events
 
 		// create game components
-
-		objectOne = new GravitoidsCircleObject();
-		objectTwo = new GravitoidsCircleObject();
-		objectThree = new GravitoidsCircleObject();
-		objectFour = new GravitoidsCircleObject();
 		
-		objectOne.setColor(Color.DARK_GRAY);
-		objectOne.setMass(1000.0);
-		objectOne.setRadius(32.0);
-		objectOne.setXSpeed(0.0);
-		objectOne.setYSpeed(0.0);
-		objectOne.setXPosition(320.0);
-		objectOne.setYPosition(340.0);
-		objectOne.setMoveable(true);
-
-		objectTwo.setColor(Color.GRAY);
-		objectTwo.setMass(100.0);
-		objectTwo.setRadius(16.0);
-		objectTwo.setXSpeed(0.0);
-		objectTwo.setYSpeed(0.0);
-		objectTwo.setXPosition(40.0);
-		objectTwo.setYPosition(40.0);
-		objectTwo.setMoveable(true);
+		int numberToMake = ((int) (Math.random() * 7)) + 4;
 		
-		objectThree.setColor(Color.PINK);
-		objectThree.setMass(100.0);
-		objectThree.setRadius(16.0);
-		objectThree.setXSpeed(0.0);
-		objectThree.setYSpeed(0.0);
-		objectThree.setXPosition(600.0);
-		objectThree.setYPosition(240.0);
-		objectThree.setMoveable(true);
+		universeObjects = new GravitoidsCircleObject[numberToMake];
 		
-		objectFour.setColor(Color.GREEN);
-		objectFour.setMass(1.0);
-		objectFour.setRadius(6.0);
-		objectFour.setXSpeed(0.0);
-		objectFour.setYSpeed(0.0);
-		objectFour.setXPosition(400.0);
-		objectFour.setYPosition(400.0);
-		objectFour.setMoveable(true);
+		for (int i = 0; i < numberToMake; i++) {
+			GravitoidsCircleObject gco = new GravitoidsCircleObject();
+			
+			universeObjects[i] = gco;
+			
+			// Simple attributes
+			
+			gco.setColor(getAColorWeLike());					// Gets a color
+			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
+			gco.setRadius(4.0 + Math.floor(Math.random() * 28.0));	// Up to 4 to 32 pixels radius
+			gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
+			
+			// Positioning
+			
+			gco.setXPosition(Math.random() * PANEL_WIDTH);		// Randomly positioned
+			gco.setYPosition(Math.random() * PANEL_HEIGHT);
+			
+			// Now make sure they aren't in the "start box"
+			
+			while ((gco.getXPosition() >= 0.4 * PANEL_WIDTH) && (gco.getXPosition() <= 0.6 * PANEL_WIDTH)
+					&& (gco.getYPosition() >= 0.4 * PANEL_HEIGHT) && (gco.getYPosition() <= 0.6 * PANEL_HEIGHT)) {
+				// They're in the middle section, try again
+				
+				gco.setXPosition(Math.random() * PANEL_WIDTH);
+				gco.setYPosition(Math.random() * PANEL_HEIGHT);
+			}
+			
+			// Speed
+			
+			if (gco.isMoveable()) {
+				if (Math.random() >= 0.5) {
+					gco.setXSpeed(Math.random() * 20.0 - 10.0);	// -10 to 10
+				}
+				
+				if (Math.random() >= 0.5) {
+					gco.setYSpeed(Math.random() * 20.0 - 10.0);	// -10 to 10
+				}
+			} else {
+				gco.setXSpeed(0.0);
+				gco.setYSpeed(0.0);
+			}
+		}
 		
 		// Set up the mouse
 
@@ -157,6 +159,37 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		}
 	}
 
+	private Color getAColorWeLike() {
+		int c = (int) (Math.random() * 11.0);
+		
+		switch (c) {
+			case 0:
+				return Color.BLACK;
+			case 1:
+				return Color.CYAN;
+			case 2:
+				return Color.DARK_GRAY;
+			case 3:
+				return Color.GRAY;
+			case 4:
+				return Color.GREEN;
+			case 5:
+				return Color.LIGHT_GRAY;
+			case 6:
+				return Color.MAGENTA;
+			case 7:
+				return Color.ORANGE;
+			case 8:
+				return Color.PINK;
+			case 9:
+				return Color.RED;
+			case 10:
+				return Color.YELLOW;
+			default:
+				return null;
+		}
+	}
+	
 	// ------- Key Stuff --------
 
 	public void keyPressed(KeyEvent e) {
@@ -319,22 +352,16 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		if (!isPaused) {
 			GravityHelper gh = GravityHelper.getInstance();
 			
-			gh.simulateGravity(objectOne, objectTwo);
-			gh.simulateGravity(objectTwo, objectThree);
-			gh.simulateGravity(objectOne, objectThree);
-			gh.simulateGravity(objectOne, objectFour);
-			gh.simulateGravity(objectTwo, objectFour);
-			gh.simulateGravity(objectThree, objectFour);
+			for (int i = 0; i < universeObjects.length - 1; i++) {
+				for (int j = i + 1; j < universeObjects.length; j++) {
+					gh.simulateGravity(universeObjects[i], universeObjects[j]);
+				}
+			}
 			
-			objectOne.move();
-			objectTwo.move();
-			objectThree.move();
-			objectFour.move();
-			
-			checkBounds(objectOne);
-			checkBounds(objectTwo);
-			checkBounds(objectThree);
-			checkBounds(objectFour);
+			for (int i = 0; i < universeObjects.length; i++) {
+				universeObjects[i].move();
+				checkBounds(universeObjects[i]);
+			}
 		}
 	}
 
@@ -381,10 +408,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		
 		dbg.fillRect(0, 0, PANEL_WIDTH, PANEL_HEIGHT);
 		
-		objectOne.draw(dbg);
-		objectTwo.draw(dbg);
-		objectThree.draw(dbg);
-		objectFour.draw(dbg);
+		for (int i = 0; i < universeObjects.length; i++) {
+			universeObjects[i].draw(dbg);
+		}
 		
 		if (isPaused) {
 			drawPaused(dbg);
