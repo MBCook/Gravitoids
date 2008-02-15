@@ -2,14 +2,14 @@ package com.gravitoids.bean;
 
 
 public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
-	private double xThurstPortion;
+	private double xThrustPortion;
 	private double yThrustPortion;
 	private double thrust;
 
 	public void normalizeThrust() {
-		double total = Math.sqrt(xThurstPortion * xThurstPortion + yThrustPortion * yThrustPortion);
+		double total = Math.sqrt(xThrustPortion * xThrustPortion + yThrustPortion * yThrustPortion);
 		
-		xThurstPortion = xThurstPortion / total;
+		xThrustPortion = xThrustPortion / total;
 		yThrustPortion = yThrustPortion / total;
 	}
 	
@@ -21,12 +21,12 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 		this.thrust = thrust;
 	}
 
-	public double getXThurstPortion() {
-		return xThurstPortion;
+	public double getXThrustPortion() {
+		return xThrustPortion;
 	}
 
-	public void setXThurstPortion(double thurstPortion) {
-		xThurstPortion = thurstPortion;
+	public void setXThrustPortion(double thurstPortion) {
+		xThrustPortion = thurstPortion;
 	}
 
 	public double getYThrustPortion() {
@@ -37,10 +37,12 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 		yThrustPortion = thrustPortion;
 	}
 
+	public abstract void prepareMove(GravitoidsObject[] stuff);
+	
 	public void move() {
 		// Use our thrust to alter our speed
 		
-		setXSpeed(getXSpeed() + thrust * xThurstPortion);
+		setXSpeed(getXSpeed() + thrust * xThrustPortion);
 		setYSpeed(getYSpeed() + thrust * yThrustPortion);
 
 		// Now move us based on our speed,

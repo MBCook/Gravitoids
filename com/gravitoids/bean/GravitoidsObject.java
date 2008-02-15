@@ -38,14 +38,14 @@ public abstract class GravitoidsObject {
 		double twoXDelta = other.getXPosition() - other.getOldXPosition();
 		double twoYDelta = other.getYPosition() - other.getOldYPosition();
 		
-		for (double i = 1.0; i > 0.0; i -= 0.25) {
+		for (double i = 0.25; i <= 1.0; i += 0.25) {
 			// X distance between the two at that time point
 			
-			double xDist = ((oneXDelta * i) + getXPosition()) - ((twoXDelta * i) + other.getXPosition());
+			double xDist = ((oneXDelta * i) + getOldXPosition()) - ((twoXDelta * i) + other.getOldXPosition());
 			
 			// Y distance between the two at that time point
 			
-			double yDist = ((oneYDelta * i) + getYPosition()) - ((twoYDelta * i) + other.getYPosition());
+			double yDist = ((oneYDelta * i) + getOldYPosition()) - ((twoYDelta * i) + other.getOldYPosition());
 			
 			// Now the actual distance
 			

@@ -11,11 +11,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JPanel;
 
 import com.gravitoids.bean.GravitoidsCircleObject;
 import com.gravitoids.bean.GravitoidsObject;
+import com.gravitoids.bean.IntelligentGravitoidsShip;
 import com.gravitoids.helper.GravityHelper;
 import com.gravitoids.main.GraitoidsGame;
 
@@ -67,6 +71,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private GraitoidsGame gg;
 
 	private GravitoidsCircleObject universeObjects[];
+	private List<IntelligentGravitoidsShip> ships = new ArrayList<IntelligentGravitoidsShip>();
 
 	// Off screen rendering
 
@@ -101,7 +106,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			gco.setColor(getAColorWeLike());					// Gets a color
 			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
-			gco.setRadius(4.0 + Math.floor(Math.random() * 28.0));	// Up to 4 to 32 pixels radius
+			gco.setRadius(8.0 + Math.floor(Math.random() * 24.0));	// Up to 4 to 32 pixels radius
 			gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
 			
 			// Positioning
@@ -111,8 +116,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			// Now make sure they aren't in the "start box"
 			
-			while ((gco.getXPosition() >= 0.4 * PANEL_WIDTH) && (gco.getXPosition() <= 0.6 * PANEL_WIDTH)
-					&& (gco.getYPosition() >= 0.4 * PANEL_HEIGHT) && (gco.getYPosition() <= 0.6 * PANEL_HEIGHT)) {
+			while ((gco.getXPosition() >= 0.3 * PANEL_WIDTH) && (gco.getXPosition() <= 0.7 * PANEL_WIDTH)
+					&& (gco.getYPosition() >= 0.3 * PANEL_HEIGHT) && (gco.getYPosition() <= 0.7 * PANEL_HEIGHT)) {
 				// They're in the middle section, try again
 				
 				gco.setXPosition(Math.random() * PANEL_WIDTH);
@@ -133,6 +138,25 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				gco.setXSpeed(0.0);
 				gco.setYSpeed(0.0);
 			}
+		}
+		
+		for (int i = 0; i < 10; i++) {
+			IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
+			
+			igs.setName("Ship " + i);
+			
+			igs.setRadius(10);
+			igs.setMass(1);
+			igs.setMoveable(true);
+			igs.setThrust(0.0);
+			igs.setXPosition(PANEL_WIDTH / 2);
+			igs.setYPosition(PANEL_HEIGHT / 2);
+			igs.setXSpeed(0.0);
+			igs.setYSpeed(0.0);
+			igs.setXThrustPortion(0.0);
+			igs.setXThrustPortion(0.0);
+			
+			ships.add(igs);
 		}
 		
 		// Set up the mouse
@@ -160,7 +184,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	}
 
 	private Color getAColorWeLike() {
-		int c = (int) (Math.random() * 11.0);
+		int c = (int) (Math.random() * 10.0);
 		
 		switch (c) {
 			case 0:
@@ -183,8 +207,6 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				return Color.PINK;
 			case 9:
 				return Color.RED;
-			case 10:
-				return Color.YELLOW;
 			default:
 				return null;
 		}
@@ -352,15 +374,56 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		if (!isPaused) {
 			GravityHelper gh = GravityHelper.getInstance();
 			
+			// First on our main objects
+			
 			for (int i = 0; i < universeObjects.length - 1; i++) {
 				for (int j = i + 1; j < universeObjects.length; j++) {
 					gh.simulateGravity(universeObjects[i], universeObjects[j]);
 				}
+				
+				for (int j = 0; j < ships.size(); j++) {
+					gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
+				}
 			}
+			
+			// Put them in the right spots
 			
 			for (int i = 0; i < universeObjects.length; i++) {
 				universeObjects[i].move();
 				checkBounds(universeObjects[i]);
+			}
+			
+			// Now simulate our ships
+			
+			Iterator<IntelligentGravitoidsShip> it = ships.iterator();
+			
+			while (it.hasNext()) {
+				IntelligentGravitoidsShip ship = it.next();
+				
+				ship.prepareMove(universeObjects);
+				ship.move();
+				
+				checkBounds(ship);
+				
+				// Now collision check
+				
+				boolean collided = false;
+				
+				for (int i = 0; i < universeObjects.length; i++) {
+					if (ship.hasCollided(universeObjects[i])) {
+						collided = true;
+						break;
+					}
+				}
+				
+				// Handle any possible collisions
+				
+				if (collided) {
+					it.remove();	// Remove us
+					System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
+				} else {
+					ship.incrementAge();	// Age us					
+				}
 			}
 		}
 	}
@@ -410,6 +473,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		
 		for (int i = 0; i < universeObjects.length; i++) {
 			universeObjects[i].draw(dbg);
+		}
+		
+		for (int i = 0; i < ships.size(); i++) {
+			ships.get(i).draw(dbg);
 		}
 		
 		if (isPaused) {
