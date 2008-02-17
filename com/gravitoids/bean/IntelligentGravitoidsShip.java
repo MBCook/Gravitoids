@@ -370,6 +370,12 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				// Minor mutation
 				
 				brain[i] = brain[i] + (Math.random() * 2.0 - 1.0) * MINI_MUTATION;	// Change value by up to MINI_MUTATION, plus or minus
+				
+				if (brain[i] > 1.0) {	// Clamp
+					brain[i] = 1.0;
+				} else if (brain[i] < -1.0) {
+					brain[i] = -1.0;
+				}
 			}
 		}
 		
