@@ -6,6 +6,11 @@ import java.awt.Graphics;
 import com.gravitoids.panel.GravitoidsPanel;
 
 public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
+	// The chances of a mutation, change rate of a small mutation
+	
+	private static final double MUTATION_RATE = 0.1;
+	private static final double MINI_MUTATION = 0.2;
+	
 	// Whether we want to draw the insight into why this object is behaving like it does
 	
 	private static boolean drawMotiviation = true;
@@ -339,5 +344,37 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		public void draw(Graphics g) {
 			// Ignore this, we don't exist
 		}
+	}
+	
+	public static double[] breed(IntelligentGravitoidsShip one, IntelligentGravitoidsShip two) {
+		// Come up with the space to hold our new brain
+		
+		double[] brain = new double[BRAIN_SIZE];
+		
+		// Do the simple breeding
+		
+		for (int i = 0; i < BRAIN_SIZE; i++) {	// Randomly select someone's genes
+			brain[i] = Math.random() > 0.5 ? one.brain[i] : two.brain[i];
+		}
+		
+		// Now, handle mutation
+		
+		for (int i = 0; i < BRAIN_SIZE; i++) {
+			double num = Math.random();
+			
+			if (num < MUTATION_RATE) {
+				// Total replacement
+				
+				brain[i] = Math.random() * 2.0 - 1.0;
+			} else if (num < 2.0 * MUTATION_RATE) {
+				// Minor mutation
+				
+				brain[i] = brain[i] + (Math.random() * 2.0 - 1.0) * MINI_MUTATION;	// Change value by up to MINI_MUTATION, plus or minus
+			}
+		}
+		
+		// Return it
+		
+		return brain;
 	}
 }
