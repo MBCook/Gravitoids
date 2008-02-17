@@ -4,7 +4,7 @@ package com.gravitoids.bean;
 public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	private double xThrustPortion;
 	private double yThrustPortion;
-	private double thrust;
+	private double thrust = 0.0;
 
 	public void normalizeThrust() {
 		double total = Math.sqrt(xThrustPortion * xThrustPortion + yThrustPortion * yThrustPortion);

@@ -14,6 +14,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	// Whether we want to draw the insight into why this object is behaving like it does
 	
 	private static boolean drawMotiviation = true;
+	private static boolean drawThrust = true;
 	
 	// The position of the object that is motivating us
 	
@@ -56,7 +57,9 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int WALL_DISTANCE_B_TERM = 20;
 	private static final int WALL_DISTANCE_C_TERM = 21;
 	
-	private static final double MAXIMUM_THRUST = 3.5;
+	private static final double MAXIMUM_THRUST = 5.0;
+	
+	private static final double WALL_FACTOR = 3.0;
 	
 	private double brain[] = null; 
 	
@@ -76,6 +79,18 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	public IntelligentGravitoidsShip(double[] brain) {
 		this.brain = brain;
+	}
+	
+	public double[] getBrain() {
+		return brain;
+	}
+	
+	public static boolean isDrawThrust() {
+		return drawThrust;
+	}
+	
+	public static void setDrawThrust(boolean drawThrust) {
+		IntelligentGravitoidsShip.drawThrust = drawThrust;
 	}
 	
 	public static boolean isDrawMotivation() {
@@ -219,7 +234,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
 										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
 		
-		weights[sideWallIndex] = distance * distance * brain[WALL_DISTANCE_A_TERM] +
+		weights[sideWallIndex] = WALL_FACTOR * distance * distance * brain[WALL_DISTANCE_A_TERM] +	// The 3 is to make this competitive
 									distance * brain[WALL_DISTANCE_B_TERM] +
 									brain[WALL_DISTANCE_C_TERM];
 		
@@ -245,7 +260,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
 								Math.pow(getYPosition() - topWall.getYPosition(), 2));
 
-		weights[topWallIndex] = distance * distance * brain[WALL_DISTANCE_A_TERM] +
+		weights[topWallIndex] = WALL_FACTOR * distance * distance * brain[WALL_DISTANCE_A_TERM] +
 									distance * brain[WALL_DISTANCE_B_TERM] +
 									brain[WALL_DISTANCE_C_TERM];
 
@@ -273,7 +288,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double totalSquares = 0.0;
 		
 		for (int i = 0; i < weights.length; i++) {
-			if (weights[i] > mostImportant) {
+			if (weights[i] >= mostImportant) {
 				mostImportant = weights[i];
 				importantIndex = i;
 			}
@@ -325,6 +340,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			if ((motivationX >= 0.0) && (motivationY >= 0.0)) {
 				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivationX, (int) motivationY);
 			}
+		}
+		
+		if (drawThrust && getThrust() > 0.0) {
+			g.setColor(Color.RED);
+			g.drawLine((int) getXPosition(), (int) getYPosition(),
+						(int) (getXPosition() + getXThrustPortion() * 2.0 * getThrust()),
+						(int) (getYPosition() + getYThrustPortion() * 2.0 * getThrust()));
 		}
 	}
 	

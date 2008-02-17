@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,10 +32,13 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private static long MAX_STATS_INTERVAL = 1000000000L;	// Stats every second or so.
 
 	// Number of uninterrupted runs before we force a break
+	
 	private static final int TIME_TO_YIELD = 16;
-	private static int MAX_FRAME_SKIPS = 5;		// Maximum number of frames to skip at once
-	private static int NUM_FPS = 10;		// How many FPS we keep for calculations
+	private static final int MAX_FRAME_SKIPS = 5;		// Maximum number of frames to skip at once
+	private static final int NUM_FPS = 10;		// How many FPS we keep for calculations
 
+	private static final int NUM_SHIPS = 100;
+	
 	// Statistics stuff
 
 	private long statsInterval = 0L;		// in ns
@@ -72,6 +77,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private GravitoidsCircleObject universeObjects[];
 	private List<IntelligentGravitoidsShip> ships = new ArrayList<IntelligentGravitoidsShip>();
+	private List<IntelligentGravitoidsShip> deadShips = new ArrayList<IntelligentGravitoidsShip>();
 
 	// Off screen rendering
 
@@ -93,7 +99,35 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 		// create game components
 		
-		int numberToMake = ((int) (Math.random() * 7)) + 4;
+		prepareUniverse();
+		prepareShips();
+		
+		// Set up the mouse
+
+		addMouseListener(	new MouseAdapter() {
+								public void mousePressed(MouseEvent e) {
+									testPress(e.getX(), e.getY());
+								}
+							});
+
+		// Setup our font
+		
+		font = new Font("SansSerif", Font.BOLD, 24);
+		metrics = this.getFontMetrics(font);
+		
+		// Initialise timing elements
+
+		fpsStore = new double[NUM_FPS];
+		upsStore = new double[NUM_FPS];
+
+		for (int i=0; i < NUM_FPS; i++) {
+			fpsStore[i] = 0.0;
+			upsStore[i] = 0.0;
+		}
+	}
+
+	private synchronized void prepareUniverse() {
+		int numberToMake = ((int) (Math.random() * 4)) + 7;
 		
 		universeObjects = new GravitoidsCircleObject[numberToMake];
 		
@@ -139,31 +173,121 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				gco.setYSpeed(0.0);
 			}
 		}
+	}
+	
+	private synchronized void prepareShips() {
+		if (deadShips.size() == 0) {
+			// Just generate 50 random ships
 		
-		// Set up the mouse
-
-		addMouseListener(	new MouseAdapter() {
-								public void mousePressed(MouseEvent e) {
-									testPress(e.getX(), e.getY());
-								}
-							});
-
-		// Setup our font
-		
-		font = new Font("SansSerif", Font.BOLD, 24);
-		metrics = this.getFontMetrics(font);
-		
-		// Initialise timing elements
-
-		fpsStore = new double[NUM_FPS];
-		upsStore = new double[NUM_FPS];
-
-		for (int i=0; i < NUM_FPS; i++) {
-			fpsStore[i] = 0.0;
-			upsStore[i] = 0.0;
+			for (int i = 0; i < NUM_SHIPS; i++) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(5.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);
+			}
+		} else {
+			// We're going to breed. First sort the dead list by longest life
+			
+			Collections.sort(deadShips, new Comparator<IntelligentGravitoidsShip>() {
+											public int compare(IntelligentGravitoidsShip one, IntelligentGravitoidsShip two) {
+												return new Long(one.getAge()).compareTo(two.getAge());
+											}
+										});
+			
+			// Reverse it so it's in decending order, longest first
+			
+			Collections.reverse(deadShips);
+			
+			System.out.println("Oldest survived: " + deadShips.get(0).getAge());
+			
+			// Copy the first ten entries over
+			
+			for (int i = 0; i < 10; i++) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(5.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);
+			}
+			
+			// Now make ~81 children children
+			
+			for (int i = 0; i < 10; i++) {
+				for (int j = 1; j < 10; j++) {
+					if (i == j)
+						continue;
+					
+					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
+					
+					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					
+					igs.setName(igs.toString());
+					
+					igs.setRadius(5.0);
+					igs.setMass(1.0);
+					igs.setMoveable(true);
+					igs.setThrust(0.0);
+					igs.setXPosition(PANEL_WIDTH / 2);
+					igs.setYPosition(PANEL_HEIGHT / 2);
+					igs.setXSpeed(0.0);
+					igs.setYSpeed(0.0);
+					igs.setXThrustPortion(0.0);
+					igs.setXThrustPortion(0.0);
+					
+					ships.add(igs);
+				}
+			}
+			
+			// Add random ships to fill things up
+			
+			while (ships.size() < NUM_SHIPS) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(5.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);
+			}
+			
+			// Clear the dead list
+			
+			deadShips.clear();
 		}
 	}
-
+	
 	private Color getAColorWeLike() {
 		int c = (int) (Math.random() * 10.0);
 		
@@ -204,52 +328,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			((keyCode == KeyEvent.VK_C) && e.isControlDown()) ) {
 
 			running = false;
-/*		} else if ((keyCode == KeyEvent.VK_LEFT) || 
-					(keyCode == KeyEvent.VK_RIGHT) || 
-					(keyCode == KeyEvent.VK_UP) || 
-					(keyCode == KeyEvent.VK_DOWN)) {
-
-			GravityHelper instance = GravityHelper.getInstance();
-			
-			if (keyCode == KeyEvent.VK_LEFT) {
-				instance.setGravitationalConstant(instance.getGravitationalConstant() - 1.0);
-				
-				System.out.println("Gravitational constant is now " + instance.getGravitationalConstant());
-			} else if (keyCode == KeyEvent.VK_RIGHT) {
-				instance.setGravitationalConstant(instance.getGravitationalConstant() + 1.0);
-				
-				System.out.println("Gravitational constant is now " + instance.getGravitationalConstant());
-			} else if (keyCode == KeyEvent.VK_UP) {
-				instance.setMaxInfluence(instance.getMaxInfluence() + 0.1);
-				
-				System.out.println("Max influence is now " + instance.getMaxInfluence());
-			} else if (keyCode == KeyEvent.VK_DOWN) {
-				instance.setMaxInfluence(instance.getMaxInfluence() - 0.1);
-				
-				System.out.println("Max influence is now " + instance.getMaxInfluence());
-			}
-*/
 		} else if (keyCode == KeyEvent.VK_M) {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
-		} else if (keyCode == KeyEvent.VK_N) {
-			synchronized (ships) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
-				
-				igs.setName(igs.toString());
-				
-				igs.setRadius(5.0);
-				igs.setMass(1.0);
-				igs.setMoveable(true);
-				igs.setThrust(0.0);
-				igs.setXPosition(PANEL_WIDTH / 2);
-				igs.setYPosition(PANEL_HEIGHT / 2);
-				igs.setXSpeed(0.0);
-				igs.setYSpeed(0.0);
-				igs.setXThrustPortion(0.0);
-				igs.setXThrustPortion(0.0);
-				
-				ships.add(igs);	
-			}
+		} else if (keyCode == KeyEvent.VK_T) {
+			IntelligentGravitoidsShip.setDrawThrust(!IntelligentGravitoidsShip.isDrawThrust());
 		}
 	}
 
@@ -371,87 +453,104 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	}
 
 
-	private void gameUpdate() {
+	private synchronized void gameUpdate() {
 		if (!isPaused) {
-			synchronized (ships) {
-				GravityHelper gh = GravityHelper.getInstance();
-				
-				// First on our main objects
-				
-				for (int i = 0; i < universeObjects.length - 1; i++) {
-					for (int j = i + 1; j < universeObjects.length; j++) {
-						gh.simulateGravity(universeObjects[i], universeObjects[j]);
-					}
-					
-					for (int j = 0; j < ships.size(); j++) {
-						gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
-					}
+			GravityHelper gh = GravityHelper.getInstance();
+			
+			// First on our main objects
+			
+			for (int i = 0; i < universeObjects.length - 1; i++) {
+				for (int j = i + 1; j < universeObjects.length; j++) {
+					gh.simulateGravity(universeObjects[i], universeObjects[j]);
 				}
 				
-				// Put them in the right spots
-				
-				for (int i = 0; i < universeObjects.length; i++) {
-					universeObjects[i].move();
-					checkBounds(universeObjects[i]);
+				for (int j = 0; j < ships.size(); j++) {
+					gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
 				}
+			}
+			
+			// Put them in the right spots
+			
+			for (int i = 0; i < universeObjects.length; i++) {
+				universeObjects[i].move();
+				checkBounds(universeObjects[i]);
+			}
+			
+			// Now simulate our ships
+			
+			Iterator<IntelligentGravitoidsShip> it = ships.iterator();
+			
+			while (it.hasNext()) {
+				IntelligentGravitoidsShip ship = it.next();
 				
-				// Now simulate our ships
+				ship.prepareMove(universeObjects);
+				ship.move();
 				
-				Iterator<IntelligentGravitoidsShip> it = ships.iterator();
+				// Now collision check
 				
-				while (it.hasNext()) {
-					IntelligentGravitoidsShip ship = it.next();
-					
-					ship.prepareMove(universeObjects);
-					ship.move();
-					
-					checkBounds(ship);
-					
-					// Now collision check
-					
-					boolean collided = false;
-					
+				boolean collided = false;
+				
+				collided = checkBounds(ship);
+				
+				if (!collided) {
 					for (int i = 0; i < universeObjects.length; i++) {
 						if (ship.hasCollided(universeObjects[i])) {
 							collided = true;
 							break;
 						}
 					}
-					
-					// Handle any possible collisions
-					
-					if (collided) {
-						it.remove();	// Remove us
-//						System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
-					} else {
-						ship.incrementAge();	// Age us					
-					}
 				}
+				
+				// Handle any possible collisions
+				
+				if (collided) {
+					it.remove();			// Remove us
+					deadShips.add(ship);	// Add us to the dead ships
+				} else {
+					ship.incrementAge();	// Age us					
+				}
+			}
+			
+			// Reset things if all the ships are dead
+			
+			if (ships.size() == 0) {
+				// Out of ships, breed the winners
+				
+				prepareShips();
+				prepareUniverse();
 			}
 		}
 	}
 
-	private void checkBounds(GravitoidsObject object) {
+	private boolean checkBounds(GravitoidsObject object) {
 		// Check the object against the bounds of (the) reality
+		
+		boolean atEdge = false;
 		
 		if (object.getXPosition() < 0) {
 			object.setXPosition(0);
 			object.setXSpeed(0);
+			atEdge = true;
 		} else if (object.getXPosition() > PANEL_WIDTH) {
 			object.setXPosition(PANEL_WIDTH);
 			object.setXSpeed(0);
+			atEdge = true;
 		}
 		
 		if (object.getYPosition() < 0) {
 			object.setYPosition(0);
 			object.setYSpeed(0);
+			atEdge = true;
 		} else if (object.getYPosition() > PANEL_HEIGHT) {
 			object.setYPosition(PANEL_HEIGHT);
 			object.setYSpeed(0);
+			atEdge = true;
 		}
+		
+		return atEdge;
 	}
 	
-	private void gameRender() {
+	private synchronized void gameRender() {
 		// Time to draw everything. First we'll setup the double-buffering image if needed.
 		
 		if (dbImage == null) {
