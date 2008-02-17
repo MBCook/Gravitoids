@@ -4,9 +4,18 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
+	// Whether we want to draw the insight into why this object is behaving like it does
+	
+	private static boolean drawMotiviation = false;
+	
+	// The position of the object that is motivating us
+	
+	private double motivationX = -1.0;
+	private double motivationY = -1.0;
+	
 	// How big our brain is
 	
-	public static final int BRAIN_SIZE = 16;
+	private static final int BRAIN_SIZE = 19;
 	
 	// What each element in the brain represents
 	
@@ -32,6 +41,10 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int CARE_TO_THRUST_B_TERM = 14;
 	private static final int CARE_TO_THRUST_C_TERM = 15;
 	
+	private static final int OBJECT_SPEED_A_TERM = 16;
+	private static final int OBJECT_SPEED_B_TERM = 17;
+	private static final int OBJECT_SPEED_C_TERM = 18;
+	
 	private static final double MAXIMUM_THRUST = 3.5;
 	
 	private double brain[] = null; 
@@ -52,6 +65,14 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	public IntelligentGravitoidsShip(double[] brain) {
 		this.brain = brain;
+	}
+	
+	public static boolean isDrawMotivation() {
+		return drawMotiviation;
+	}
+	
+	public static void setDrawMotivation(boolean drawMotivation) {
+		IntelligentGravitoidsShip.drawMotiviation = drawMotivation;
 	}
 	
 	public String getName() {
@@ -114,6 +135,28 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				direction += 2.0 * Math.PI;
 			}
 			
+			// The object's speed relative to us
+			
+			double xSpeedDelta = getXSpeed() - object.getXSpeed();
+			double ySpeedDelta = getYSpeed() - object.getYSpeed();
+			
+			if ((xSpeedDelta < 0.0) && (getXPosition() > object.getXPosition())) {	// Copensate for relative positions
+				xSpeedDelta *= -1.0;
+			}
+			
+			if ((ySpeedDelta < 0.0) && (getYPosition() > object.getYPosition())) {
+				ySpeedDelta *= -1.0;
+			}
+			
+			xSpeedDelta = xSpeedDelta < 0.0 ? 0.0 : xSpeedDelta;	// Mark we don't care about negative speeds
+			ySpeedDelta = ySpeedDelta < 0.0 ? 0.0 : ySpeedDelta;
+			
+			double speed = Math.sqrt(xSpeedDelta * xSpeedDelta + ySpeedDelta * ySpeedDelta);
+			
+			speed = speed * speed * brain[OBJECT_SPEED_A_TERM] +
+					speed * brain[OBJECT_SPEED_B_TERM] +
+					brain[OBJECT_SPEED_C_TERM];
+			
 			// Now the object's size
 			
 			double size = object.getRadius() * object.getRadius() * brain[OBJECT_SIZE_A_TERM] +
@@ -126,7 +169,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			// Store things we need to for this object
 			
-			weights[i] = moveability + mass + size + distance;
+			weights[i] = moveability + mass + size + distance + speed;
 			headings[i] = direction;
 		}
 		
@@ -144,6 +187,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			totalSquares += weights[i] * weights[i];
 		}
+		
+		// Record the position of the object we are being motivated by
+		
+		motivationX = objects[importantIndex].getXPosition();
+		motivationY = objects[importantIndex].getYPosition();
 		
 		// Now that we have that, we'll scale thrust to the normal of the weights
 		
@@ -166,11 +214,24 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	}
 	
 	public void draw(Graphics g) {
-		int drawX = (int) getXPosition();
-		int drawY = (int) getYPosition();
+		// Figure out where we are
+		
 		int r = (int) getRadius();
 		
+		int ovalDrawX = (int) getXPosition() - r;
+		int ovalDrawY = (int) getYPosition() - r;
+		
+		// Draw us
+		
 		g.setColor(Color.BLUE);
-		g.fillOval(drawX - (r / 2), drawY - (r / 2), r, r);
+		g.fillOval(ovalDrawX, ovalDrawY, r * 2, r * 2);
+		
+		// Now, if requested and in existance, draw our motivation
+		
+		if (drawMotiviation) {
+			if ((motivationX >= 0.0) && (motivationY >= 0.0)) {
+				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivationX, (int) motivationY);
+			}
+		}
 	}
 }

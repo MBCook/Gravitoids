@@ -204,7 +204,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			((keyCode == KeyEvent.VK_C) && e.isControlDown()) ) {
 
 			running = false;
-		} else if ((keyCode == KeyEvent.VK_LEFT) || 
+/*		} else if ((keyCode == KeyEvent.VK_LEFT) || 
 					(keyCode == KeyEvent.VK_RIGHT) || 
 					(keyCode == KeyEvent.VK_UP) || 
 					(keyCode == KeyEvent.VK_DOWN)) {
@@ -228,13 +228,16 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				
 				System.out.println("Max influence is now " + instance.getMaxInfluence());
 			}
+*/
+		} else if (keyCode == KeyEvent.VK_M) {
+			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 		} else if (keyCode == KeyEvent.VK_N) {
 			synchronized (ships) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
 				
 				igs.setName(igs.toString());
 				
-				igs.setRadius(10.0);
+				igs.setRadius(5.0);
 				igs.setMass(1.0);
 				igs.setMoveable(true);
 				igs.setThrust(0.0);
@@ -419,7 +422,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 					
 					if (collided) {
 						it.remove();	// Remove us
-						System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
+//						System.out.println("Death at " + ship.getAge() + " for " + ship.getName());
 					} else {
 						ship.incrementAge();	// Age us					
 					}

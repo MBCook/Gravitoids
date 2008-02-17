@@ -15,12 +15,17 @@ public class GravitoidsCircleObject extends GravitoidsObject {
 	}
 
 	public void draw(Graphics g) {
-		int drawX = (int) getXPosition();
-		int drawY = (int) getYPosition();
+		// Figure out where we are
+		
 		int r = (int) getRadius();
 		
+		int drawX = (int) getXPosition() - r;
+		int drawY = (int) getYPosition() - r;
+		
+		// Draw us
+		
 		g.setColor(color);
-		g.fillOval(drawX - (r / 2), drawY - (r / 2), r * 2, r * 2);
+		g.fillOval(drawX, drawY, r * 2, r * 2);
 	}
 }
 

@@ -60,9 +60,9 @@ public abstract class GravitoidsObject {
 			if (dist < getRadius() + other.getRadius()) {
 				// Circles overlap, colission
 			
-				System.out.println(getXPosition() + ", " + getYPosition());
-				System.out.println(other.getXPosition() + ", " + other.getYPosition());
-				System.out.println(getRadius() + ", " + other.getRadius());
+//				System.out.println(getXPosition() + ", " + getYPosition());
+//				System.out.println(other.getXPosition() + ", " + other.getYPosition());
+//				System.out.println(getRadius() + ", " + other.getRadius());
 
 				return true;
 			}
