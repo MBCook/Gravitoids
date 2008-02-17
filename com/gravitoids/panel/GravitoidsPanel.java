@@ -24,8 +24,8 @@ import com.gravitoids.helper.GravityHelper;
 import com.gravitoids.main.GraitoidsGame;
 
 public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
-	private static final int PANEL_WIDTH = 640;
-	private static final int PANEL_HEIGHT = 480; 
+	public static final int PANEL_WIDTH = 640;
+	public static final int PANEL_HEIGHT = 480; 
 
 	private static long MAX_STATS_INTERVAL = 1000000000L;	// Stats every second or so.
 

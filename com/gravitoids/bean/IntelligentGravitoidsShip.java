@@ -3,10 +3,12 @@ package com.gravitoids.bean;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import com.gravitoids.panel.GravitoidsPanel;
+
 public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	// Whether we want to draw the insight into why this object is behaving like it does
 	
-	private static boolean drawMotiviation = false;
+	private static boolean drawMotiviation = true;
 	
 	// The position of the object that is motivating us
 	
@@ -15,7 +17,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	// How big our brain is
 	
-	private static final int BRAIN_SIZE = 19;
+	private static final int BRAIN_SIZE = 22;
 	
 	// What each element in the brain represents
 	
@@ -44,6 +46,10 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int OBJECT_SPEED_A_TERM = 16;
 	private static final int OBJECT_SPEED_B_TERM = 17;
 	private static final int OBJECT_SPEED_C_TERM = 18;
+	
+	private static final int WALL_DISTANCE_A_TERM = 19;
+	private static final int WALL_DISTANCE_B_TERM = 20;
+	private static final int WALL_DISTANCE_C_TERM = 21;
 	
 	private static final double MAXIMUM_THRUST = 3.5;
 	
@@ -91,17 +97,21 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		return age;
 	}
 	
-	public void prepareMove(GravitoidsObject[] objects) {
+	public void prepareMove(GravitoidsObject[] theirObjects) {
 		// Look at each object, decide how much we care, and how we will respond
 		// Then add it all together
+		
+		GravitoidsObject[] objects = new GravitoidsObject[theirObjects.length + 2];	// 2 more so we can track walls
 		
 		double[] weights = new double[objects.length];	// How much we care
 		double[] headings = new double[objects.length];	// Which heading to go in
 		
-		for (int i = 0; i < objects.length; i++) {
+		for (int i = 0; i < objects.length - 2; i++) {
 			// Get what we're working with
 			
-			GravitoidsObject object = objects[i];
+			GravitoidsObject object = theirObjects[i];
+			
+			objects[i] = object;
 			
 			// Figure out our distance from it
 			
@@ -173,6 +183,84 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			headings[i] = direction;
 		}
 		
+		// Now, we'll insert the closest X and Y walls, with apropriate weights
+		
+		GravitoidsObject sideWall = new WallObject();
+		GravitoidsObject topWall = new WallObject();
+		
+		sideWall.setYPosition(getYPosition());
+		topWall.setXPosition(getXPosition());
+		
+		if (getXPosition() < GravitoidsPanel.PANEL_WIDTH / 2.0) {
+			sideWall.setXPosition(0.0);
+		} else {
+			sideWall.setXPosition(GravitoidsPanel.PANEL_WIDTH);
+		}
+		
+		if (getYPosition() < GravitoidsPanel.PANEL_HEIGHT / 2.0) {
+			topWall.setYPosition(0.0);
+		} else {
+			topWall.setYPosition(GravitoidsPanel.PANEL_HEIGHT);
+		}
+		
+		int sideWallIndex = objects.length - 2;
+		int topWallIndex = objects.length - 1;
+		
+		objects[sideWallIndex] = sideWall;
+		objects[topWallIndex] = topWall;
+		
+		// Direction and distance for side wall
+		
+		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
+										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
+		
+		weights[sideWallIndex] = distance * distance * brain[WALL_DISTANCE_A_TERM] +
+									distance * brain[WALL_DISTANCE_B_TERM] +
+									brain[WALL_DISTANCE_C_TERM];
+		
+		double direction = Math.atan((getXPosition() - sideWall.getXPosition()) / 
+										(getYPosition() - sideWall.getYPosition()));
+		
+		direction = direction * direction * brain[OBJECT_DIRECTION_A_TERM] +
+					direction * brain[OBJECT_DIRECTION_B_TERM] +
+					brain[OBJECT_DIRECTION_C_TERM];
+		
+		while (direction > 2.0 * Math.PI) {	// Clamp it
+			direction -= 2.0 * Math.PI;
+		}
+		
+		while (direction < 0.0) {
+			direction += 2.0 * Math.PI;
+		}
+		
+		headings[sideWallIndex] = direction;
+		
+		// Now for the top wall
+		
+		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
+								Math.pow(getYPosition() - topWall.getYPosition(), 2));
+
+		weights[topWallIndex] = distance * distance * brain[WALL_DISTANCE_A_TERM] +
+									distance * brain[WALL_DISTANCE_B_TERM] +
+									brain[WALL_DISTANCE_C_TERM];
+
+		direction = Math.atan((getXPosition() - topWall.getXPosition()) / 
+								(getYPosition() - topWall.getYPosition()));
+
+		direction = direction * direction * brain[OBJECT_DIRECTION_A_TERM] +
+					direction * brain[OBJECT_DIRECTION_B_TERM] +
+					brain[OBJECT_DIRECTION_C_TERM];
+
+		while (direction > 2.0 * Math.PI) {	// Clamp it
+			direction -= 2.0 * Math.PI;
+		}
+		
+		while (direction < 0.0) {
+			direction += 2.0 * Math.PI;
+		}
+		
+		headings[topWallIndex] = direction;
+		
 		// Now that we have all that, we need to find what we care about most
 		
 		int importantIndex = 0;
@@ -232,6 +320,24 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			if ((motivationX >= 0.0) && (motivationY >= 0.0)) {
 				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivationX, (int) motivationY);
 			}
+		}
+	}
+	
+	private class WallObject extends GravitoidsObject {
+		public WallObject() {
+			// Init everything to 0, mostly
+			
+			this.setMass(0.0);
+			this.setMoveable(false);
+			this.setRadius(1.0);		// So collision detection works
+			this.setXPosition(0.0);
+			this.setXSpeed(0.0);
+			this.setYPosition(0.0);
+			this.setYSpeed(0.0);
+		}
+		
+		public void draw(Graphics g) {
+			// Ignore this, we don't exist
 		}
 	}
 }
