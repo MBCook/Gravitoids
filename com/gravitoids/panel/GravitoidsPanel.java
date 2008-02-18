@@ -144,7 +144,12 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			gco.setColor(getAColorWeLike());					// Gets a color
 			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
 			gco.setRadius(4.0 + Math.floor(Math.random() * 12.0));	// Up to 4 to 16 pixels radius
-			gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
+			
+			if (i < 5) {
+				gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
+			} else {
+				gco.setMoveable(true);								// Make sure there are always some
+			}
 			
 			// Positioning
 			
@@ -339,7 +344,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	
 	private void saveDeadShips() {
 		try {
-			FileWriter fw = new FileWriter("/Users/michael/desktop/graivtoids_ships.dat");
+			//FileWriter fw = new FileWriter("/Users/michael/desktop/graivtoids_ships.dat");
+			FileWriter fw = new FileWriter("c:\\graivtoids_ships.dat");
 			
 			fw.append("Generation: " + generation + "\n");
 			

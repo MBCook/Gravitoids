@@ -57,7 +57,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int WALL_DISTANCE_B_TERM = 20;
 	private static final int WALL_DISTANCE_C_TERM = 21;
 	
-	private static final double MAXIMUM_THRUST = 5.0;
+	private static final double MAXIMUM_THRUST = 25.0;	// Really high, so they have to learn to moderate
 	
 	private static final double WALL_FACTOR = 3.0;
 	
@@ -117,6 +117,12 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		return age;
 	}
 	
+	public double calculateFromBrain(double input, int aTerm, int bTerm, int cTerm) {
+		return input * input * brain[aTerm] +
+				input * brain[bTerm] +
+				brain[cTerm];
+	}
+	
 	public void prepareMove(GravitoidsObject[] theirObjects) {
 		// Look at each object, decide how much we care, and how we will respond
 		// Then add it all together
@@ -138,24 +144,18 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			double distance = Math.sqrt(Math.pow(getXPosition() - object.getXPosition(), 2) + 
 											Math.pow(getYPosition() - object.getYPosition(), 2));
 			
-			distance = distance * distance * brain[OBJECT_DISTANCE_A_TERM] +
-						distance * brain[OBJECT_DISTANCE_B_TERM] +
-						brain[OBJECT_DISTANCE_C_TERM];
+			distance = calculateFromBrain(distance, OBJECT_DISTANCE_A_TERM, OBJECT_DISTANCE_B_TERM, OBJECT_DISTANCE_C_TERM);
 			
 			// Now handle it's mass
 			
-			double mass = object.getMass() * object.getMass() * brain[OBJECT_MASS_A_TERM] +
-							object.getMass() * brain[OBJECT_MASS_B_TERM] +
-							brain[OBJECT_MASS_C_TERM];
+			double mass = calculateFromBrain(object.getMass(), OBJECT_MASS_A_TERM, OBJECT_MASS_B_TERM, OBJECT_MASS_C_TERM);
 			
 			// Now the direction
 			
 			double direction = Math.atan((getXPosition() - object.getXPosition()) / 
 											(getYPosition() - object.getYPosition()));
 			
-			direction = direction * direction * brain[OBJECT_DIRECTION_A_TERM] +
-						direction * brain[OBJECT_DIRECTION_B_TERM] +
-						brain[OBJECT_DIRECTION_C_TERM];
+			direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
 			
 			while (direction > 2.0 * Math.PI) {	// Clamp it
 				direction -= 2.0 * Math.PI;
@@ -183,15 +183,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			double speed = Math.sqrt(xSpeedDelta * xSpeedDelta + ySpeedDelta * ySpeedDelta);
 			
-			speed = speed * speed * brain[OBJECT_SPEED_A_TERM] +
-					speed * brain[OBJECT_SPEED_B_TERM] +
-					brain[OBJECT_SPEED_C_TERM];
+			speed = calculateFromBrain(speed, OBJECT_SPEED_A_TERM, OBJECT_SPEED_B_TERM, OBJECT_SPEED_C_TERM);
 			
 			// Now the object's size
 			
-			double size = object.getRadius() * object.getRadius() * brain[OBJECT_SIZE_A_TERM] +
-							object.getRadius() * brain[OBJECT_SIZE_B_TERM] +
-							brain[OBJECT_SIZE_C_TERM];
+			double size = calculateFromBrain(object.getRadius(), OBJECT_SIZE_A_TERM, OBJECT_SIZE_B_TERM, OBJECT_SIZE_C_TERM);
 			
 			// Now moveability
 			
@@ -234,16 +230,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
 										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
 		
-		weights[sideWallIndex] = WALL_FACTOR * distance * distance * brain[WALL_DISTANCE_A_TERM] +	// The 3 is to make this competitive
-									distance * brain[WALL_DISTANCE_B_TERM] +
-									brain[WALL_DISTANCE_C_TERM];
+		weights[sideWallIndex] = WALL_FACTOR *
+									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 		
 		double direction = Math.atan((getXPosition() - sideWall.getXPosition()) / 
 										(getYPosition() - sideWall.getYPosition()));
 		
-		direction = direction * direction * brain[OBJECT_DIRECTION_A_TERM] +
-					direction * brain[OBJECT_DIRECTION_B_TERM] +
-					brain[OBJECT_DIRECTION_C_TERM];
+		direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
 		
 		while (direction > 2.0 * Math.PI) {	// Clamp it
 			direction -= 2.0 * Math.PI;
@@ -260,16 +253,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
 								Math.pow(getYPosition() - topWall.getYPosition(), 2));
 
-		weights[topWallIndex] = WALL_FACTOR * distance * distance * brain[WALL_DISTANCE_A_TERM] +
-									distance * brain[WALL_DISTANCE_B_TERM] +
-									brain[WALL_DISTANCE_C_TERM];
+		weights[topWallIndex] = WALL_FACTOR *
+									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 
 		direction = Math.atan((getXPosition() - topWall.getXPosition()) / 
 								(getYPosition() - topWall.getYPosition()));
 
-		direction = direction * direction * brain[OBJECT_DIRECTION_A_TERM] +
-					direction * brain[OBJECT_DIRECTION_B_TERM] +
-					brain[OBJECT_DIRECTION_C_TERM];
+		direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
 
 		while (direction > 2.0 * Math.PI) {	// Clamp it
 			direction -= 2.0 * Math.PI;
@@ -303,15 +293,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		// Now that we have that, we'll scale thrust to the normal of the weights
 		
-		double newThrust = weights[importantIndex] / Math.sqrt(totalSquares);
+		double newThrust = weights[importantIndex];// / Math.sqrt(totalSquares);
 		
-		newThrust = newThrust * newThrust * CARE_TO_THRUST_A_TERM +
-					newThrust * CARE_TO_THRUST_B_TERM +
-					CARE_TO_THRUST_C_TERM;
+		newThrust = calculateFromBrain(newThrust, CARE_TO_THRUST_A_TERM, CARE_TO_THRUST_B_TERM, CARE_TO_THRUST_C_TERM);
 		
-		if (newThrust > MAXIMUM_THRUST) {
-			newThrust = MAXIMUM_THRUST;
-		}
+		//if (newThrust > MAXIMUM_THRUST) {
+		//	newThrust = MAXIMUM_THRUST;
+		//}
 		
 		setThrust(newThrust);
 		
@@ -345,8 +333,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		if (drawThrust && getThrust() > 0.0) {
 			g.setColor(Color.RED);
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
-						(int) (getXPosition() + getXThrustPortion() * 2.0 * getThrust()),
-						(int) (getYPosition() + getYThrustPortion() * 2.0 * getThrust()));
+						(int) (getXPosition() + getXThrustPortion() * getThrust()),
+						(int) (getYPosition() + getYThrustPortion() * getThrust()));
 		}
 	}
 	
