@@ -8,12 +8,12 @@ import javax.swing.JFrame;
 
 import com.gravitoids.panel.GravitoidsPanel;
 
-public class GraitoidsGame extends JFrame implements WindowListener {
+public class GravitoidsGame extends JFrame implements WindowListener {
 	private static int DEFAULT_FPS = 60;
 
 	private GravitoidsPanel gp;
 
-	public GraitoidsGame(long period) {
+	public GravitoidsGame(long period) {
 		super("Gravitoids");
 		makeGUI(period);
 
@@ -69,7 +69,7 @@ public class GraitoidsGame extends JFrame implements WindowListener {
 		
 		System.out.println("fps: " + fps + "; period: " + period + " ms");
 
-		new GraitoidsGame(period*1000000L);		 // ms --> nanosecs 
+		new GravitoidsGame(period*1000000L);		 // ms --> nanosecs 
 	}
 }
 

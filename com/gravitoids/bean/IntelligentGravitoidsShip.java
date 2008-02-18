@@ -223,8 +223,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			topWall.setYPosition(GravitoidsPanel.PANEL_HEIGHT);
 		}
 		
-		int sideWallIndex = objects.length - 2;
-		int topWallIndex = objects.length - 1;
+		int sideWallIndex = objects.length - 1;
+		int topWallIndex = objects.length - 2;
 		
 		objects[sideWallIndex] = sideWall;
 		objects[topWallIndex] = topWall;

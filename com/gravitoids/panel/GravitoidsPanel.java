@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +24,7 @@ import com.gravitoids.bean.GravitoidsCircleObject;
 import com.gravitoids.bean.GravitoidsObject;
 import com.gravitoids.bean.IntelligentGravitoidsShip;
 import com.gravitoids.helper.GravityHelper;
-import com.gravitoids.main.GraitoidsGame;
+import com.gravitoids.main.GravitoidsGame;
 
 public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	public static final int PANEL_WIDTH = 640;
@@ -37,7 +38,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private static final int MAX_FRAME_SKIPS = 5;		// Maximum number of frames to skip at once
 	private static final int NUM_FPS = 10;		// How many FPS we keep for calculations
 
-	private static final int NUM_SHIPS = 100;
+	private static final int NUM_SHIPS = 200;
 	
 	// Statistics stuff
 
@@ -63,6 +64,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private Font font;
 	private FontMetrics metrics;
 	
+	private long generation = 0;
+	
 	// Animation stuff
 
 	private Thread animator;
@@ -73,7 +76,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	// Game stuff
 
-	private GraitoidsGame gg;
+	private GravitoidsGame gg;
 
 	private GravitoidsCircleObject universeObjects[];
 	private List<IntelligentGravitoidsShip> ships = new ArrayList<IntelligentGravitoidsShip>();
@@ -86,7 +89,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	// And now.. methods!
 
-	public GravitoidsPanel(GraitoidsGame thePG, long period) {
+	public GravitoidsPanel(GravitoidsGame thePG, long period) {
 		gg = thePG;
 		this.period = period;
 
@@ -210,7 +213,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			Collections.reverse(deadShips);
 			
-			System.out.println("Oldest survived: " + deadShips.get(0).getAge());
+			System.out.println("Oldest survived of generation " + generation + ": " + deadShips.get(0).getAge());
+			
+			saveDeadShips();
+			
+			generation++;
 			
 			// Copy the first ten entries over
 			
@@ -261,6 +268,48 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
+			// Now we get the 20 worst ships from last time
+			
+			for (int i = NUM_SHIPS - 20; i < NUM_SHIPS; i++) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(5.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);
+			}
+			
+			// Now 20 random ships
+			
+			for (int i = 0; i < 20; i++) {
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)).getBrain());
+				
+				igs.setName(igs.toString());
+				
+				igs.setRadius(5.0);
+				igs.setMass(1.0);
+				igs.setMoveable(true);
+				igs.setThrust(0.0);
+				igs.setXPosition(PANEL_WIDTH / 2);
+				igs.setYPosition(PANEL_HEIGHT / 2);
+				igs.setXSpeed(0.0);
+				igs.setYSpeed(0.0);
+				igs.setXThrustPortion(0.0);
+				igs.setXThrustPortion(0.0);
+				
+				ships.add(igs);
+			}
+			
 			// Add random ships to fill things up
 			
 			while (ships.size() < NUM_SHIPS) {
@@ -285,6 +334,30 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Clear the dead list
 			
 			deadShips.clear();
+		}
+	}
+	
+	private void saveDeadShips() {
+		try {
+			FileWriter fw = new FileWriter("/Users/michael/desktop/graivtoids_ships.dat");
+			
+			fw.append("Generation: " + generation + "\n");
+			
+			for (int i = 1; i <= NUM_SHIPS; i++) {
+				IntelligentGravitoidsShip ship = deadShips.get(i - 1);
+				
+				fw.append("" + i + "," + ship.getAge());
+				
+				for (int j = 0; j < ship.getBrain().length; j++) {
+					fw.append("," + ship.getBrain()[j]);
+				}
+				
+				fw.append("\n");
+			}
+			
+			fw.close();
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e);	// We'll just co-opt this
 		}
 	}
 	
