@@ -248,7 +248,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				ships.add(igs);
 			}
 			
-			// Now make ~81 children children
+			// Now make ~81 children children from the top 10 survivors
 			
 			for (int i = 0; i < 10; i++) {
 				for (int j = 1; j < 10; j++) {
@@ -276,9 +276,37 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
-			// Now we get the 20 worst ships from last time
+			// Now do it agian for the absolute cream of the crop, so they can breed more
 			
-			for (int i = NUM_SHIPS - 20; i < NUM_SHIPS; i++) {
+			for (int i = 0; i < 3; i++) {
+				for (int j = 1; j < 5; j++) {
+					if (i == j)
+						continue;
+					
+					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
+					
+					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					
+					igs.setName(igs.toString());
+					
+					igs.setRadius(5.0);
+					igs.setMass(1.0);
+					igs.setMoveable(true);
+					igs.setThrust(0.0);
+					igs.setXPosition(PANEL_WIDTH / 2);
+					igs.setYPosition(PANEL_HEIGHT / 2);
+					igs.setXSpeed(0.0);
+					igs.setYSpeed(0.0);
+					igs.setXThrustPortion(0.0);
+					igs.setXThrustPortion(0.0);
+					
+					ships.add(igs);
+				}
+			}
+			
+			// Now we get the 10 worst ships from last time
+			
+			for (int i = NUM_SHIPS - 10; i < NUM_SHIPS; i++) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
 				
 				igs.setName(igs.toString());
@@ -297,9 +325,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				ships.add(igs);
 			}
 			
-			// Now 20 random ships
+			// Now 10 random ships
 			
-			for (int i = 0; i < 20; i++) {
+			for (int i = 0; i < 10; i++) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)).getBrain());
 				
 				igs.setName(igs.toString());
