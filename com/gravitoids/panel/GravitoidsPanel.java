@@ -304,6 +304,32 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
+			for (int i = 0; i < 1; i++) {	// Top only
+				for (int j = 1; j < 5; j++) {
+					if (i == j)
+						continue;
+					
+					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
+					
+					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					
+					igs.setName(igs.toString());
+					
+					igs.setRadius(5.0);
+					igs.setMass(1.0);
+					igs.setMoveable(true);
+					igs.setThrust(0.0);
+					igs.setXPosition(PANEL_WIDTH / 2);
+					igs.setYPosition(PANEL_HEIGHT / 2);
+					igs.setXSpeed(0.0);
+					igs.setYSpeed(0.0);
+					igs.setXThrustPortion(0.0);
+					igs.setXThrustPortion(0.0);
+					
+					ships.add(igs);
+				}
+			}
+			
 			// Now we get the 10 worst ships from last time
 			
 			for (int i = NUM_SHIPS - 10; i < NUM_SHIPS; i++) {
