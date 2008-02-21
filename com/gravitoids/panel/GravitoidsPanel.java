@@ -65,6 +65,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private FontMetrics metrics;
 	
 	private long generation = 0;
+	private int trial = 0;
+	
+	private final int MAX_TRIALS = 10;
 	
 	// Animation stuff
 
@@ -185,7 +188,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	
 	private synchronized void prepareShips() {
 		if (deadShips.size() == 0) {
-			// Just generate 50 random ships
+			// Just generate random ships
 		
 			for (int i = 0; i < NUM_SHIPS; i++) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip();
@@ -593,10 +596,34 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Reset things if all the ships are dead
 			
 			if (ships.size() == 0) {
-				// Out of ships, breed the winners
+				// Out of ships
 				
-				prepareShips();
-				prepareUniverse();
+				trial++;
+				
+				if (trial == MAX_TRIALS) {
+					// Breed new ships, start a new trial
+					
+					prepareShips();
+					prepareUniverse();
+					
+					trial = 0;
+				} else {
+					// We want things to keep going with the same ships, so move them to the live list
+					
+					ships.addAll(deadShips);
+					deadShips.clear();
+					
+					// Reset all their locations and such, then get a new universe
+					
+					for (IntelligentGravitoidsShip ship : ships) {
+						ship.setXPosition(PANEL_WIDTH / 2.0);
+						ship.setYPosition(PANEL_HEIGHT / 2.0);
+						ship.setXSpeed(0.0);
+						ship.setYSpeed(0.0);
+					}
+					
+					prepareUniverse();
+				}				
 			}
 		}
 	}
