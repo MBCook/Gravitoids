@@ -1,5 +1,6 @@
 package com.gravitoids.bean;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -48,9 +49,12 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private double motivationX = -1.0;
 	private double motivationY = -1.0;
 	
+	private double otherMotivationX = -1.0;
+	private double otherMotivationY = -1.0;
+	
 	// How big our brain is
 	
-	private static final int BRAIN_SIZE = 22;
+	private static final int BRAIN_SIZE = 25;
 	
 	// What each element in the brain represents
 	
@@ -84,9 +88,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int WALL_DISTANCE_B_TERM = 20;
 	private static final int WALL_DISTANCE_C_TERM = 21;
 	
-	private static final double MAXIMUM_THRUST = 25.0;	// Really high, so they have to learn to moderate
+	private static final int THRUST_SPLIT = 22;
 	
-	private static final double WALL_FACTOR = 3.0;
+	private static final int MINIMUM_FEAR = 23;
+	
+	private static final int WALL_FACTOR = 24;
 	
 	private double brain[] = null; 
 	
@@ -257,7 +263,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
 										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
 		
-		weights[sideWallIndex] = WALL_FACTOR *
+		weights[sideWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 7.0 *
 									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 		
 		double direction = Math.atan((getXPosition() - sideWall.getXPosition()) / 
@@ -280,7 +286,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
 								Math.pow(getYPosition() - topWall.getYPosition(), 2));
 
-		weights[topWallIndex] = WALL_FACTOR *
+		weights[topWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 7.0 *
 									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 
 		direction = Math.atan((getXPosition() - topWall.getXPosition()) / 
@@ -300,40 +306,100 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		// Now that we have all that, we need to find what we care about most
 		
-		int importantIndex = 0;
-		double mostImportant = 0.0;
-		double totalSquares = 0.0;
+		int importantIndex = -1;
+		int secondIndex = -1;
+		
+		double mostImportant = Double.NEGATIVE_INFINITY;
+		double secondMostImportant = Double.NEGATIVE_INFINITY;
 		
 		for (int i = 0; i < weights.length; i++) {
 			if (weights[i] >= mostImportant) {
+				secondMostImportant = mostImportant;
 				mostImportant = weights[i];
+				
+				secondIndex = importantIndex;
 				importantIndex = i;
+			} else if (weights[i] >= secondMostImportant) {
+				secondMostImportant = weights[i];
+				secondIndex = i;
 			}
-			
-			totalSquares += weights[i] * weights[i];
+		}
+
+		// Record the position of the object we are being motivated by
+
+		double minimumFear = (1.0 - (brain[MINIMUM_FEAR] + 1.0) / 2.0) * Double.MAX_VALUE * -1.0;
+		
+		if (mostImportant > minimumFear) {
+			motivationX = objects[importantIndex].getXPosition();
+			motivationY = objects[importantIndex].getYPosition();
+		} else {
+			motivationX = -1;
+			motivationY = -1;
 		}
 		
-		// Record the position of the object we are being motivated by
-		
-		motivationX = objects[importantIndex].getXPosition();
-		motivationY = objects[importantIndex].getYPosition();
+		if (secondMostImportant > minimumFear) {
+			otherMotivationX = objects[secondIndex].getXPosition();
+			otherMotivationY = objects[secondIndex].getYPosition();
+		} else {
+			otherMotivationX = -1;
+			otherMotivationY = -1;
+		}
 		
 		// Now that we have that, we'll scale thrust to the normal of the weights
-		
-		double newThrust = weights[importantIndex];// / Math.sqrt(totalSquares);
-		
-		newThrust = calculateFromBrain(newThrust, CARE_TO_THRUST_A_TERM, CARE_TO_THRUST_B_TERM, CARE_TO_THRUST_C_TERM);
-		
-		//if (newThrust > MAXIMUM_THRUST) {
-		//	newThrust = MAXIMUM_THRUST;
-		//}
-		
-		setThrust(newThrust);
-		
-		// Set our heading
-		
-		setXThrustPortion(Math.cos(headings[importantIndex]));
-		setYThrustPortion(Math.sin(headings[importantIndex]));
+
+		if ((importantIndex >= 0) && (mostImportant > minimumFear)) {
+			if ((secondIndex >= 0) && (secondMostImportant > minimumFear)) {
+				// OK, two things to handle
+				
+				double newThrustA = weights[importantIndex];
+				
+				newThrustA = calculateFromBrain(newThrustA, CARE_TO_THRUST_A_TERM, CARE_TO_THRUST_B_TERM, CARE_TO_THRUST_C_TERM);
+				
+				double newThrustB = weights[secondIndex];
+				
+				newThrustB = calculateFromBrain(newThrustB, CARE_TO_THRUST_A_TERM, CARE_TO_THRUST_B_TERM, CARE_TO_THRUST_C_TERM);
+				
+				newThrustA = newThrustA * ((brain[THRUST_SPLIT] + 1.0) / 2.0);
+				newThrustB = newThrustB * (1.0 - ((brain[THRUST_SPLIT] + 1.0) / 2.0));
+				
+				// Now we have to add the two thrust vectors
+				
+				double xThrust = Math.cos(headings[importantIndex]) * newThrustA;
+				double yThrust = Math.sin(headings[importantIndex]) * newThrustA;
+				
+				xThrust += Math.cos(headings[secondIndex]) * newThrustB;
+				yThrust += Math.sin(headings[secondIndex]) * newThrustB;
+				
+				// Now we have to get that back into a thrust and thrust percentages
+				// Get the total thrust, then normalize the two vector parts
+				
+				double factor = Math.sqrt(xThrust * xThrust + yThrust * yThrust);
+				
+				setThrust(factor);
+				
+				setXThrustPortion(xThrust / factor);
+				setYThrustPortion(yThrust / factor);
+			} else {
+				// Just one, this is easy
+				
+				double newThrust = weights[importantIndex];
+				
+				newThrust = calculateFromBrain(newThrust, CARE_TO_THRUST_A_TERM, CARE_TO_THRUST_B_TERM, CARE_TO_THRUST_C_TERM);
+				
+				setThrust(newThrust);
+				
+				// Set our heading
+				
+				setXThrustPortion(Math.cos(headings[importantIndex]));
+				setYThrustPortion(Math.sin(headings[importantIndex]));
+			}
+		} else {
+			// We ain't scared of nothing
+			
+			setThrust(0.0);
+			setXThrustPortion(0.0);
+			setYThrustPortion(0.0);
+		}
 	}
 	
 	public void draw(Graphics g) {
@@ -352,7 +418,12 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		// Now, if requested and in existance, draw our motivation
 		
 		if (drawMotiviation) {
+			if ((otherMotivationX >= 0.0) && (otherMotivationY >= 0.0)) {
+				g.setColor(Color.LIGHT_GRAY);
+				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) otherMotivationX, (int) otherMotivationY);
+			}
 			if ((motivationX >= 0.0) && (motivationY >= 0.0)) {
+				g.setColor(Color.BLUE);
 				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivationX, (int) motivationY);
 			}
 		}
