@@ -58,17 +58,17 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	// What each element in the brain represents
 	
-	private static final int OBJECT_DISTANCE_A_TERM = 0;
-	private static final int OBJECT_DISTANCE_B_TERM = 1;
-	private static final int OBJECT_DISTANCE_C_TERM = 2;
+	private static final int THRUST_SPLIT = 0;
+	private static final int MINIMUM_FEAR = 1;
+	private static final int WALL_FACTOR = 2;
 	
 	private static final int OBJECT_DIRECTION_A_TERM = 3;
 	private static final int OBJECT_DIRECTION_B_TERM = 4;
 	private static final int OBJECT_DIRECTION_C_TERM = 5;
 	
-	private static final int OBJECT_MASS_A_TERM = 6;
-	private static final int OBJECT_MASS_B_TERM = 7;
-	private static final int OBJECT_MASS_C_TERM = 8;
+	private static final int OBJECT_GRAVITY_A_TERM = 6;
+	private static final int OBJECT_GRAVITY_B_TERM = 7;
+	private static final int OBJECT_GRAVITY_C_TERM = 8;
 	
 	private static final int OBJECT_SIZE_A_TERM = 9;
 	private static final int OBJECT_SIZE_B_TERM = 10;
@@ -87,12 +87,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int WALL_DISTANCE_A_TERM = 19;
 	private static final int WALL_DISTANCE_B_TERM = 20;
 	private static final int WALL_DISTANCE_C_TERM = 21;
-	
-	private static final int THRUST_SPLIT = 22;
-	
-	private static final int MINIMUM_FEAR = 23;
-	
-	private static final int WALL_FACTOR = 24;
 	
 	private double brain[] = null; 
 	
@@ -172,16 +166,14 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			objects[i] = object;
 			
-			// Figure out our distance from it
+			// Figure out our distance from it, used in the gravity calculation
 			
 			double distance = Math.sqrt(Math.pow(getXPosition() - object.getXPosition(), 2) + 
 											Math.pow(getYPosition() - object.getYPosition(), 2));
 			
-			distance = calculateFromBrain(distance, OBJECT_DISTANCE_A_TERM, OBJECT_DISTANCE_B_TERM, OBJECT_DISTANCE_C_TERM);
+			// Now handle it's mass to get gravity
 			
-			// Now handle it's mass
-			
-			double mass = calculateFromBrain(object.getMass(), OBJECT_MASS_A_TERM, OBJECT_MASS_B_TERM, OBJECT_MASS_C_TERM);
+			double gravity = calculateFromBrain(distance / object.getMass(), OBJECT_GRAVITY_A_TERM, OBJECT_GRAVITY_B_TERM, OBJECT_GRAVITY_C_TERM);
 			
 			// Now the direction
 			
@@ -228,7 +220,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			// Store things we need to for this object
 			
-			weights[i] = moveability + mass + size + distance + speed;
+			weights[i] = moveability + gravity + size + speed;
 			headings[i] = direction;
 		}
 		

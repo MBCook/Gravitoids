@@ -358,7 +358,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			}
 			
 			// Now we get the 10 worst ships from last time
-			
+			/*
 			for (int i = NUM_SHIPS - 10; i < NUM_SHIPS; i++) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
 				
@@ -377,8 +377,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				
 				ships.add(igs);
 			}
-			
-			// Now 10 random ships
+			*/
+			// Now 10 random ships from last run
 			
 			for (int i = 0; i < 10; i++) {
 				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)).getBrain());
@@ -490,6 +490,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			((keyCode == KeyEvent.VK_C) && e.isControlDown()) ) {
 
 			running = false;
+		} else if (keyCode == KeyEvent.VK_P) {
+			isPaused = !isPaused;
 		} else if (keyCode == KeyEvent.VK_M) {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 		} else if (keyCode == KeyEvent.VK_T) {

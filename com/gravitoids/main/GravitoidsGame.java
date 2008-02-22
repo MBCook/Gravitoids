@@ -67,7 +67,6 @@ public class GravitoidsGame extends JFrame implements WindowListener {
 	//	gp.pauseGame();
 	}
 
-
 	public void windowDeiconified(WindowEvent e) {
 		gp.resumeGame();
 	}
@@ -76,11 +75,9 @@ public class GravitoidsGame extends JFrame implements WindowListener {
 		gp.pauseGame(); 
 	}
 
-
 	public void windowClosing(WindowEvent e) {
 		gp.stopGame();
 	}
-
 
 	public void windowClosed(WindowEvent e) {}
 	public void windowOpened(WindowEvent e) {}
