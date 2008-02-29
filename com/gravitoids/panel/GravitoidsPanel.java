@@ -175,7 +175,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
 			gco.setRadius(4.0 + Math.floor(Math.random() * 12.0));	// Up to 4 to 16 pixels radius
 			
-			if (i < 5) {
+			if (i < 7) {
 				gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement
 			} else {
 				gco.setMoveable(true);								// Make sure there are always some
@@ -257,7 +257,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Copy the first ten entries over
 			
 			for (int i = 0; i < 10; i++) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i));
 				
 				igs.setName(igs.toString());
 				
@@ -279,12 +279,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			for (int i = 0; i < 10; i++) {
 				for (int j = 1; j < 10; j++) {
-					if (i == j)
+					if (i == j) {
 						continue;
+					}
 					
-					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
-					
-					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
 					
 					igs.setName(igs.toString());
 					
@@ -307,12 +306,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			for (int i = 0; i < 3; i++) {
 				for (int j = 1; j < 5; j++) {
-					if (i == j)
+					if (i == j) {
 						continue;
+					}
 					
-					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
-					
-					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
 					
 					igs.setName(igs.toString());
 					
@@ -333,12 +331,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			for (int i = 0; i < 1; i++) {	// Top only
 				for (int j = 1; j < 5; j++) {
-					if (i == j)
+					if (i == j) {
 						continue;
+					}
 					
-					double[] brain = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
-					
-					IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(brain);
+					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
 					
 					igs.setName(igs.toString());
 					
@@ -357,31 +354,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
-			// Now we get the 10 worst ships from last time
-			/*
-			for (int i = NUM_SHIPS - 10; i < NUM_SHIPS; i++) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i).getBrain());
-				
-				igs.setName(igs.toString());
-				
-				igs.setRadius(5.0);
-				igs.setMass(1.0);
-				igs.setMoveable(true);
-				igs.setThrust(0.0);
-				igs.setXPosition(PANEL_WIDTH / 2);
-				igs.setYPosition(PANEL_HEIGHT / 2);
-				igs.setXSpeed(0.0);
-				igs.setYSpeed(0.0);
-				igs.setXThrustPortion(0.0);
-				igs.setXThrustPortion(0.0);
-				
-				ships.add(igs);
-			}
-			*/
 			// Now 10 random ships from last run
 			
 			for (int i = 0; i < 10; i++) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)).getBrain());
+				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)));
 				
 				igs.setName(igs.toString());
 				
@@ -439,9 +415,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				
 				for (int j = 0; j < ship.getBrain().length; j++) {
 					fw.append("," + ship.getBrain()[j]);
+					fw.append("," + ship.getEvolutionDirection()[j]);
 				}
 				
 				fw.append("\n");
+				
 			}
 			
 			fw.close();
@@ -481,7 +459,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	
 	// ------- Key Stuff --------
 
-	public void keyPressed(KeyEvent e) {
+	public synchronized void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 
 		if ((keyCode == KeyEvent.VK_ESCAPE) ||
@@ -496,6 +474,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 		} else if (keyCode == KeyEvent.VK_T) {
 			IntelligentGravitoidsShip.setDrawThrust(!IntelligentGravitoidsShip.isDrawThrust());
+		} else if (keyCode == KeyEvent.VK_K) {
+			// Kill everyone
+			deadShips.addAll(ships);
+			ships.clear();
 		}
 	}
 

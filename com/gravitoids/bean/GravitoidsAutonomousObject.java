@@ -1,5 +1,8 @@
 package com.gravitoids.bean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Copyright (c) 2008, Michael Cook
  * All rights reserved.
@@ -30,7 +33,11 @@ package com.gravitoids.bean;
 public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	private double xThrustPortion;
 	private double yThrustPortion;
+	
 	private double thrust = 0.0;
+	
+	private List<Double> oldXThrusts = new ArrayList<Double>();
+	private List<Double> oldYThrusts = new ArrayList<Double>();
 
 	public void normalizeThrust() {
 		double total = Math.sqrt(xThrustPortion * xThrustPortion + yThrustPortion * yThrustPortion);
@@ -66,10 +73,38 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	public abstract void prepareMove(GravitoidsObject[] stuff);
 	
 	public void move() {
+		// Calculate how fast they want to move this time
+		
+		oldXThrusts.add(thrust * xThrustPortion * getSpeedFactor());
+		oldYThrusts.add(thrust * yThrustPortion * getSpeedFactor());
+		
+		// Now remove any extra entries
+		
+		if (oldXThrusts.size() > 3) {
+			oldXThrusts.remove(0);
+			oldYThrusts.remove(0);
+		}
+		
+		// Now figure out how much to thrust, since we are adding 'thrust momentum' of 3 frames
+		
+		double newXThrust = 0.0;
+		double newYThrust = 0.0;
+		
+		if (oldXThrusts.size() == 1) {
+			newXThrust = oldXThrusts.get(0);
+			newYThrust = oldYThrusts.get(0);
+		} else if (oldXThrusts.size() == 2) {
+			newXThrust = .75 * oldXThrusts.get(1) + .25 * oldXThrusts.get(0);
+			newYThrust = .75 * oldYThrusts.get(1) + .25 * oldYThrusts.get(0);
+		} else {
+			newXThrust = .75 * oldXThrusts.get(2) + .1875 * oldXThrusts.get(1) + .0625 * oldXThrusts.get(0);
+			newYThrust = .75 * oldYThrusts.get(2) + .1875 * oldYThrusts.get(1) + .0625 * oldYThrusts.get(0);
+		}
+		
 		// Use our thrust to alter our speed
 		
-		setXSpeed(getXSpeed() + thrust * xThrustPortion * getSpeedFactor());
-		setYSpeed(getYSpeed() + thrust * yThrustPortion * getSpeedFactor());
+		setXSpeed(getXSpeed() + newXThrust);
+		setYSpeed(getYSpeed() + newYThrust);
 
 		// Now move us based on our speed,
 		

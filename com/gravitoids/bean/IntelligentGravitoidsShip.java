@@ -89,6 +89,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int WALL_DISTANCE_C_TERM = 21;
 	
 	private double brain[] = null; 
+	private int evolutionDirection[] = null;	// Which way the brian term is moving
 	
 	private String name = null;
 	
@@ -98,18 +99,32 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		// Give us a random brain
 		
 		brain = new double[BRAIN_SIZE];
+		evolutionDirection = new int[BRAIN_SIZE];
 		
 		for (int i = 0; i < BRAIN_SIZE; i++) {
 			brain[i] = Math.random() * 2.0 - 1.0;
+			evolutionDirection[i] = 0;
 		}
 	}
 	
-	public IntelligentGravitoidsShip(double[] brain) {
-		this.brain = brain;
+	public IntelligentGravitoidsShip(IntelligentGravitoidsShip source) {
+		// Copy our brain
+		
+		brain = new double[BRAIN_SIZE];
+		evolutionDirection = new int[BRAIN_SIZE];
+		
+		for (int i = 0; i < BRAIN_SIZE; i++) {
+			brain[i] = source.brain[i];
+			evolutionDirection[i] = source.evolutionDirection[i];
+		}
 	}
 	
 	public double[] getBrain() {
 		return brain;
+	}
+	
+	public int[] getEvolutionDirection() {
+		return evolutionDirection;
 	}
 	
 	public static boolean isDrawThrust() {
@@ -325,16 +340,16 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			motivationX = objects[importantIndex].getXPosition();
 			motivationY = objects[importantIndex].getYPosition();
 		} else {
-			motivationX = -1;
-			motivationY = -1;
+			motivationX = -1.0;
+			motivationY = -1.0;
 		}
 		
 		if (secondMostImportant > minimumFear) {
 			otherMotivationX = objects[secondIndex].getXPosition();
 			otherMotivationY = objects[secondIndex].getYPosition();
 		} else {
-			otherMotivationX = -1;
-			otherMotivationY = -1;
+			otherMotivationX = -1.0;
+			otherMotivationY = -1.0;
 		}
 		
 		// Now that we have that, we'll scale thrust to the normal of the weights
@@ -446,10 +461,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		}
 	}
 	
-	public static double[] breed(IntelligentGravitoidsShip one, IntelligentGravitoidsShip two) {
+	public static IntelligentGravitoidsShip breed(IntelligentGravitoidsShip one, IntelligentGravitoidsShip two) {
 		// Come up with the space to hold our new brain
 		
-		double[] brain = new double[BRAIN_SIZE];
+		IntelligentGravitoidsShip ship = new IntelligentGravitoidsShip();
+		
+		double[] brain = ship.getBrain();
+		int[] evolutionDirection = ship.getEvolutionDirection();
 		
 		// Do the simple breeding
 		
@@ -460,27 +478,51 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		// Now, handle mutation
 		
 		for (int i = 0; i < BRAIN_SIZE; i++) {
+			// First, we'll figure out what direction to evolve in
+			
+			if (Math.random() > 0.1) {
+				// Things go in the direction of our parrents
+				
+				evolutionDirection[i] = Math.random() > 0.5 ? one.evolutionDirection[i] : two.evolutionDirection[i];
+			} else {
+				// New direction
+				
+				evolutionDirection[i] = Math.random() > 0.5 ? 1 : -1;
+			}
+			
+			// Now figure out if we are evolving
+			
 			double num = Math.random();
 			
 			if (num < MUTATION_RATE) {
 				// Total replacement
 				
 				brain[i] = Math.random() * 2.0 - 1.0;
+				evolutionDirection[i] = 0;					// We didn't move
 			} else if (num < 2.0 * MUTATION_RATE) {
 				// Minor mutation
+				// See if we need a direction to mutate in
 				
-				brain[i] = brain[i] + (Math.random() * 2.0 - 1.0) * MINI_MUTATION;	// Change value by up to MINI_MUTATION, plus or minus
+				if (evolutionDirection[i] == 0) {
+					evolutionDirection[i] = Math.random() > 0.5 ? 1 : -1;
+				}
 				
-				if (brain[i] > 1.0) {	// Clamp
+				// Change value by up to MINI_MUTATION, plus or minus based on evolutionDirection
+				
+				brain[i] = brain[i] + (Math.random() * ((double) evolutionDirection[i])) * MINI_MUTATION;
+				
+				if (brain[i] > 1.0) {	// Clamp to the limits
 					brain[i] = 1.0;
 				} else if (brain[i] < -1.0) {
 					brain[i] = -1.0;
 				}
+			} else {
+				// Nothing changes
 			}
 		}
 		
 		// Return it
 		
-		return brain;
+		return ship;
 	}
 }
