@@ -172,8 +172,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Simple attributes
 			
 			gco.setColor(getAColorWeLike());					// Gets a color
-			gco.setMass(100 + Math.random() * 900.0);				// Up to 1000 units of mass
-			gco.setRadius(4.0 + Math.floor(Math.random() * 12.0));	// Up to 4 to 16 pixels radius
+			
+			double magicNumber = Math.random();					// Heavier objects are bigger
+			
+			gco.setMass(100 + magicNumber * 900.0);				// Up to 1000 units of mass
+			gco.setRadius(4.0 + Math.floor(magicNumber * 12.0));	// Up to 4 to 16 pixels radius
 			
 			if (i < 7) {
 				gco.setMoveable(Math.random() >= 0.5);				// Random chance of movement

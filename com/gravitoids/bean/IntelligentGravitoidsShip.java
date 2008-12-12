@@ -44,13 +44,10 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static boolean drawMotiviation = true;
 	private static boolean drawThrust = true;
 	
-	// The position of the object that is motivating us
+	// The object(s) that are motivating us
 	
-	private double motivationX = -1.0;
-	private double motivationY = -1.0;
-	
-	private double otherMotivationX = -1.0;
-	private double otherMotivationY = -1.0;
+	private GravitoidsObject mainMotivation = null;
+	private GravitoidsObject secondMotivation = null;
 	
 	// How big our brain is
 	
@@ -180,7 +177,9 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double direction = Math.atan((getXPosition() - object.getXPosition()) / 
 										(getYPosition() - object.getYPosition()));
 		
-		direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
+		//direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
+		
+		direction = direction + Math.PI;
 		
 		while (direction > 2.0 * Math.PI) {	// Clamp it
 			direction -= 2.0 * Math.PI;
@@ -188,7 +187,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		while (direction < 0.0) {
 			direction += 2.0 * Math.PI;
-		}
+		} 
 		
 		// The object's speed relative to us
 		
@@ -256,7 +255,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
 										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
 		
-		weights[sideWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 7.0 *
+		weights[sideWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 10.0 *
 									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 		
 		double direction = Math.atan((getXPosition() - sideWall.getXPosition()) / 
@@ -279,7 +278,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
 								Math.pow(getYPosition() - topWall.getYPosition(), 2));
 
-		weights[topWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 7.0 *
+		weights[topWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 10.0 *
 									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
 
 		direction = Math.atan((getXPosition() - topWall.getXPosition()) / 
@@ -317,12 +316,15 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			asessObject(object, weights, headings, i);
 		}
-		
+
 		// Now assess the closest walls
 		
 		assessWalls(objects, weights, headings);
 		
 		// Now that we have all that, we need to find what we care about most
+		
+		mainMotivation = null;		// Just to make sure we don't have stuff yet
+		secondMotivation = null;
 		
 		int importantIndex = -1;			// Thing we are most scared of
 		int secondImportantIndex = -1;		// Thing we are second most scared of
@@ -337,28 +339,32 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				secondMostImportant = mostImportant;
 				mostImportant = weights[i];
 				
+				secondMotivation = mainMotivation;
+				mainMotivation = objects[i];
+				
 				secondImportantIndex = importantIndex;
 				importantIndex = i;
 			} else if ((weights[i] >= secondMostImportant) && (weights[i] > minimumFear)) {
 				secondMostImportant = weights[i];
+				secondMotivation = objects[i];
 				secondImportantIndex = i;
 			}
 		}
-		
+		/*
+		if ((mostImportant >= 0) || (secondImportantIndex >= 0)) {
+			System.out.println("\n");
+			System.out.println("min: " + minimumFear);
+			System.out.println("main: " + (importantIndex >= 0 ? weights[importantIndex] : "n/a"));
+			System.out.println("second: " + (secondImportantIndex >= 0 ? weights[secondImportantIndex] : "n/a"));
+			for (int i = 0; i < weights.length; i++) {
+				System.out.println(i + ": " + weights[i] + (importantIndex == i ? "*" : "") + (secondImportantIndex == i ? "." : ""));
+			}
+		}
+		*/
 		// Now that we have that, we'll scale thrust to the normal of the weights
 
-		if (importantIndex >= 0) {
-			// Setup to draw this object
-			
-			motivationX = objects[importantIndex].getXPosition();
-			motivationY = objects[importantIndex].getYPosition();
-			
-			if (secondImportantIndex >= 0) {
-				// Setup to draw this one too
-				
-				otherMotivationX = objects[secondImportantIndex].getXPosition();
-				otherMotivationY = objects[secondImportantIndex].getYPosition();
-				
+		if (mainMotivation != null) {
+			if (secondMotivation != null) {
 				// OK, two things to handle
 				
 				double newThrustA = weights[importantIndex];
@@ -395,12 +401,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				
 				setXThrustPortion(xThrust / factor);
 				setYThrustPortion(yThrust / factor);
-			} else {
-				// Don't draw a second object we're affraid of
-				
-				otherMotivationX = -1.0;
-				otherMotivationY = -1.0;
-				
+			} else {	
 				// Just one, this is easy
 				
 				double newThrust = weights[importantIndex];
@@ -415,13 +416,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				setYThrustPortion(Math.sin(headings[importantIndex]));
 			}
 		} else {
-			// Don't draw either object since we're not afraid
-			
-			motivationX = -1.0;
-			motivationY = -1.0;
-			otherMotivationX = -1.0;
-			otherMotivationY = -1.0;
-			
 			// We ain't scared of nothing
 			
 			setThrust(0.0);
@@ -446,13 +440,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		// Now, if requested and in existance, draw our motivation
 		
 		if (drawMotiviation) {
-			if ((otherMotivationX >= 0.0) && (otherMotivationY >= 0.0)) {
+			if (secondMotivation != null) {
 				g.setColor(Color.LIGHT_GRAY);
-				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) otherMotivationX, (int) otherMotivationY);
+				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) secondMotivation.getXPosition(), (int) secondMotivation.getYPosition());
 			}
-			if ((motivationX >= 0.0) && (motivationY >= 0.0)) {
+			if (mainMotivation != null) {
 				g.setColor(Color.BLUE);
-				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivationX, (int) motivationY);
+				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) mainMotivation.getXPosition(), (int) mainMotivation.getYPosition());
 			}
 		}
 		
