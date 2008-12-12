@@ -1,9 +1,11 @@
 package com.gravitoids.bean;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import javax.swing.text.WrappedPlainView;
+
+import com.gravitoids.helper.WrappingHelper;
 import com.gravitoids.panel.GravitoidsPanel;
 
 /**
@@ -51,45 +53,40 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	// How big our brain is
 	
-	private static final int BRAIN_SIZE = 25;
+	private static final int BRAIN_SIZE = 15;
 	
 	// What each element in the brain represents
 	
 	private static final int THRUST_SPLIT = 0;
 	private static final int MINIMUM_FEAR = 1;
-	private static final int WALL_FACTOR = 2;
 	
-	private static final int OBJECT_DIRECTION_A_TERM = 3;
-	private static final int OBJECT_DIRECTION_B_TERM = 4;
-	private static final int OBJECT_DIRECTION_C_TERM = 5;
+	private static final int OBJECT_GRAVITY_A_TERM = 2;
+	private static final int OBJECT_GRAVITY_B_TERM = 3;
+	private static final int OBJECT_GRAVITY_C_TERM = 4;
 	
-	private static final int OBJECT_GRAVITY_A_TERM = 6;
-	private static final int OBJECT_GRAVITY_B_TERM = 7;
-	private static final int OBJECT_GRAVITY_C_TERM = 8;
-	
-	private static final int OBJECT_SIZE_A_TERM = 9;
-	private static final int OBJECT_SIZE_B_TERM = 10;
-	private static final int OBJECT_SIZE_C_TERM = 11;
+	private static final int OBJECT_SIZE_A_TERM = 5;
+	private static final int OBJECT_SIZE_B_TERM = 6;
+	private static final int OBJECT_SIZE_C_TERM = 7;
 
-	private static final int OBJECT_MOVEABLE_FACTOR = 12;
+	private static final int OBJECT_MOVEABLE_FACTOR = 8;
 	
-	private static final int CARE_TO_THRUST_A_TERM = 13;
-	private static final int CARE_TO_THRUST_B_TERM = 14;
-	private static final int CARE_TO_THRUST_C_TERM = 15;
+	private static final int CARE_TO_THRUST_A_TERM = 9;
+	private static final int CARE_TO_THRUST_B_TERM = 10;
+	private static final int CARE_TO_THRUST_C_TERM = 11;
 	
-	private static final int OBJECT_SPEED_A_TERM = 16;
-	private static final int OBJECT_SPEED_B_TERM = 17;
-	private static final int OBJECT_SPEED_C_TERM = 18;
-	
-	private static final int WALL_DISTANCE_A_TERM = 19;
-	private static final int WALL_DISTANCE_B_TERM = 20;
-	private static final int WALL_DISTANCE_C_TERM = 21;
-	
+	private static final int OBJECT_SPEED_A_TERM = 12;
+	private static final int OBJECT_SPEED_B_TERM = 13;
+	private static final int OBJECT_SPEED_C_TERM = 14;
+	/*
+	private static final int OBJECT_DIRECTION_A_TERM = 15;
+	private static final int OBJECT_DIRECTION_B_TERM = 16;
+	private static final int OBJECT_DIRECTION_C_TERM = 17;
+	*/
 	private double brain[] = null; 
 	private int evolutionDirection[] = null;	// Which way the brian term is moving
 	
 	private String name = null;
-	
+
 	private long age = 0L;
 	
 	public IntelligentGravitoidsShip() {
@@ -115,7 +112,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			evolutionDirection[i] = source.evolutionDirection[i];
 		}
 	}
-	
+
 	public double[] getBrain() {
 		return brain;
 	}
@@ -162,11 +159,42 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				brain[cTerm];
 	}
 	
+
+	
+	private double fixSpeedDelta(double speedDelta, double ourCoord, double theirCoord, double maxValue) {
+		double distance = ourCoord - theirCoord;
+		
+		if (distance > (maxValue / 2.0)) {
+			if (ourCoord < theirCoord) {
+				theirCoord -= maxValue;
+			} else {
+				theirCoord += maxValue;
+			}
+		}
+		
+		if (ourCoord < theirCoord) {
+			// We are to their "left"
+			
+			if (speedDelta > 0) {
+				// This will move us TO them. Wrong.
+				speedDelta *= -1.0;
+			}
+		} else {
+			// We are to their "right"
+			
+			if (speedDelta < 0) {
+				// This will move us TO them. Wrong
+				speedDelta *= -1.0;
+			}
+		}
+		
+		return speedDelta;
+	}
+	
 	private void asessObject(GravitoidsObject object, double[] weights, double[] headings, int index) {
 		// Figure out our distance from it, used in the gravity calculation
 		
-		double distance = Math.sqrt(Math.pow(getXPosition() - object.getXPosition(), 2) + 
-										Math.pow(getYPosition() - object.getYPosition(), 2));
+		double distance = WrappingHelper.calculateDistanceToObject(this, object); 
 		
 		// Now handle it's mass to get gravity
 		
@@ -174,8 +202,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		// Now the direction
 		
-		double direction = Math.atan((getXPosition() - object.getXPosition()) / 
-										(getYPosition() - object.getYPosition()));
+		double direction = WrappingHelper.calculateDirectionToObject(this, object);
 		
 		//direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
 		
@@ -194,6 +221,9 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double xSpeedDelta = getXSpeed() - object.getXSpeed();
 		double ySpeedDelta = getYSpeed() - object.getYSpeed();
 		
+		xSpeedDelta = fixSpeedDelta(xSpeedDelta, getXPosition(), object.getXPosition(), GravitoidsPanel.PANEL_WIDTH);
+		ySpeedDelta = fixSpeedDelta(ySpeedDelta, getYPosition(), object.getYPosition(), GravitoidsPanel.PANEL_HEIGHT);
+		/*
 		if ((xSpeedDelta < 0.0) && (getXPosition() > object.getXPosition())) {	// Copensate for relative positions
 			xSpeedDelta *= -1.0;
 		}
@@ -201,7 +231,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		if ((ySpeedDelta < 0.0) && (getYPosition() > object.getYPosition())) {
 			ySpeedDelta *= -1.0;
 		}
-		
+		*/
 		xSpeedDelta = xSpeedDelta < 0.0 ? 0.0 : xSpeedDelta;	// Mark we don't care about negative speeds
 		ySpeedDelta = ySpeedDelta < 0.0 ? 0.0 : ySpeedDelta;
 		
@@ -223,80 +253,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		headings[index] = direction;
 	}
 	
-	private void assessWalls(GravitoidsObject[] objects, double[] weights, double[] headings) {
-		// Now, we'll insert the closest X and Y walls, with apropriate weights
-		
-		GravitoidsObject sideWall = new WallObject();
-		GravitoidsObject topWall = new WallObject();
-		
-		sideWall.setYPosition(getYPosition());
-		topWall.setXPosition(getXPosition());
-		
-		if (getXPosition() < GravitoidsPanel.PANEL_WIDTH / 2.0) {
-			sideWall.setXPosition(0.0);
-		} else {
-			sideWall.setXPosition(GravitoidsPanel.PANEL_WIDTH);
-		}
-		
-		if (getYPosition() < GravitoidsPanel.PANEL_HEIGHT / 2.0) {
-			topWall.setYPosition(0.0);
-		} else {
-			topWall.setYPosition(GravitoidsPanel.PANEL_HEIGHT);
-		}
-		
-		int sideWallIndex = objects.length - 1;
-		int topWallIndex = objects.length - 2;
-		
-		objects[sideWallIndex] = sideWall;
-		objects[topWallIndex] = topWall;
-		
-		// Direction and distance for side wall
-		
-		double distance = Math.sqrt(Math.pow(getXPosition() - sideWall.getXPosition(), 2) + 
-										Math.pow(getYPosition() - sideWall.getYPosition(), 2));
-		
-		weights[sideWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 10.0 *
-									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
-		
-		double direction = Math.atan((getXPosition() - sideWall.getXPosition()) / 
-										(getYPosition() - sideWall.getYPosition()));
-		
-		direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
-		
-		while (direction > 2.0 * Math.PI) {	// Clamp it
-			direction -= 2.0 * Math.PI;
-		}
-		
-		while (direction < 0.0) {
-			direction += 2.0 * Math.PI;
-		}
-		
-		headings[sideWallIndex] = direction;
-		
-		// Now for the top wall
-		
-		distance = Math.sqrt(Math.pow(getXPosition() - topWall.getXPosition(), 2) + 
-								Math.pow(getYPosition() - topWall.getYPosition(), 2));
-
-		weights[topWallIndex] = ((brain[WALL_FACTOR] + 1.0) / 2.0) * 10.0 *
-									calculateFromBrain(distance, WALL_DISTANCE_A_TERM, WALL_DISTANCE_B_TERM, WALL_DISTANCE_C_TERM);
-
-		direction = Math.atan((getXPosition() - topWall.getXPosition()) / 
-								(getYPosition() - topWall.getYPosition()));
-
-		direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
-
-		while (direction > 2.0 * Math.PI) {	// Clamp it
-			direction -= 2.0 * Math.PI;
-		}
-		
-		while (direction < 0.0) {
-			direction += 2.0 * Math.PI;
-		}
-		
-		headings[topWallIndex] = direction;
-	}
-	
 	public void prepareMove(GravitoidsObject[] theirObjects) {
 		// Prepare arrays to hold stuff we'll be messing with, and how much we care
 		
@@ -316,10 +272,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			asessObject(object, weights, headings, i);
 		}
-
-		// Now assess the closest walls
-		
-		assessWalls(objects, weights, headings);
 		
 		// Now that we have all that, we need to find what we care about most
 		
@@ -455,24 +407,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
 						(int) (getXPosition() + getXThrustPortion() * getThrust()),
 						(int) (getYPosition() + getYThrustPortion() * getThrust()));
-		}
-	}
-	
-	private class WallObject extends GravitoidsObject {
-		public WallObject() {
-			// Init everything to 0, mostly
-			
-			this.setMass(0.0);
-			this.setMoveable(false);
-			this.setRadius(1.0);		// So collision detection works
-			this.setXPosition(0.0);
-			this.setXSpeed(0.0);
-			this.setYPosition(0.0);
-			this.setYSpeed(0.0);
-		}
-		
-		public void draw(Graphics g) {
-			// Ignore this, we don't exist
 		}
 	}
 	

@@ -31,6 +31,8 @@ import java.util.List;
  */
 
 public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
+	private static final double MAX_OBJECT_THRUST = 100.0;
+	
 	private double xThrustPortion;
 	private double yThrustPortion;
 	
@@ -40,7 +42,7 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	private List<Double> oldYThrusts = new ArrayList<Double>();
 
 	public void normalizeThrust() {
-		double total = Math.sqrt(xThrustPortion * xThrustPortion + yThrustPortion * yThrustPortion);
+		double total = Math.sqrt(Math.pow(xThrustPortion, 2.0) + Math.pow(yThrustPortion, 2.0));
 		
 		xThrustPortion = xThrustPortion / total;
 		yThrustPortion = yThrustPortion / total;
@@ -51,6 +53,10 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	}
 
 	public void setThrust(double thrust) {
+		if (thrust > MAX_OBJECT_THRUST) {
+			thrust = MAX_OBJECT_THRUST;
+		}
+		
 		this.thrust = thrust;
 	}
 
