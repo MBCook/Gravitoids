@@ -704,20 +704,51 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		// Check the object against the bounds of (the) reality
 		// Wrap things around if neccessary
 		
-		while (object.getXPosition() < 0) {
+		double inputX = object.getXPosition();
+		double inputY = object.getYPosition();
+		
+		int count = 0;
+		
+		while (object.getXPosition() < 0.0) {
 			object.setXPosition(object.getXPosition() + PANEL_WIDTH);
+			
+			count++;
+			
+			if (count > 20) {
+				throw new RuntimeException("Infinite loop detector! X: " + inputX + ", Y: " + inputY);
+			}
 		}
 
 		while (object.getXPosition() > PANEL_WIDTH) {
 			object.setXPosition(object.getXPosition() - PANEL_WIDTH);
+			
+			count++;
+			
+			if (count > 20) {
+				throw new RuntimeException("Infinite loop detector! X: " + inputX + ", Y: " + inputY);
+			}
 		}
 
-		while (object.getYPosition() < 0) {
+		count = 0;
+		
+		while (object.getYPosition() < 0.0) {
 			object.setYPosition(object.getYPosition() + PANEL_HEIGHT);
+			
+			count++;
+			
+			if (count > 20) {
+				throw new RuntimeException("Infinite loop detector! X: " + inputX + ", Y: " + inputY);
+			}
 		}
 		
 		while (object.getYPosition() > PANEL_HEIGHT) {
 			object.setYPosition(object.getYPosition() - PANEL_HEIGHT);				
+			
+			count++;
+			
+			if (count > 20) {
+				throw new RuntimeException("Infinite loop detector! X: " + inputX + ", Y: " + inputY);
+			}
 		}
 	}
 	

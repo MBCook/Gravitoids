@@ -347,7 +347,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				// Now we have to get that back into a thrust and thrust percentages
 				// Get the total thrust, then normalize the two vector parts
 				
-				double factor = Math.sqrt(xThrust * xThrust + yThrust * yThrust);
+				double factor = Math.sqrt(Math.pow(xThrust, 2.0) + Math.pow(yThrust, 2.0));
 				
 				setThrust(factor);
 				
