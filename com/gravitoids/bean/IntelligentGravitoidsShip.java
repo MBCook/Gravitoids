@@ -3,8 +3,6 @@ package com.gravitoids.bean;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import javax.swing.text.WrappedPlainView;
-
 import com.gravitoids.helper.WrappingHelper;
 import com.gravitoids.panel.GravitoidsPanel;
 
@@ -394,11 +392,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		if (drawMotiviation) {
 			if (secondMotivation != null) {
 				g.setColor(Color.LIGHT_GRAY);
-				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) secondMotivation.getXPosition(), (int) secondMotivation.getYPosition());
+				drawMotivation(g, secondMotivation);
 			}
 			if (mainMotivation != null) {
 				g.setColor(Color.BLUE);
-				g.drawLine((int) getXPosition(), (int) getYPosition(), (int) mainMotivation.getXPosition(), (int) mainMotivation.getYPosition());
+				drawMotivation(g, mainMotivation);
 			}
 		}
 		
@@ -407,6 +405,84 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
 						(int) (getXPosition() + getXThrustPortion() * getThrust()),
 						(int) (getYPosition() + getYThrustPortion() * getThrust()));
+		}
+	}
+	
+	private void drawMotivation(Graphics g, GravitoidsObject motivation) {
+		// If we are doing things directly, this is easy.
+		// If we are doing a wrap around, we'll need to draw two lines.
+		
+		double xDistance = getXPosition() - motivation.getXPosition();
+		double yDistance = getYPosition() - motivation.getYPosition();
+		
+		if ((xDistance < GravitoidsPanel.PANEL_WIDTH / 2.0)
+				&& (yDistance < GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
+			// The simple case. Just one line directly between the objects.
+			
+			g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivation.getXPosition(), (int) motivation.getYPosition());
+		} else {
+			// OK, we'll need two lines
+			// One from us to where the other object would be off screen
+			
+			double temporaryX = motivation.getXPosition();
+			double temporaryY = motivation.getYPosition();
+			
+			if (Math.abs(xDistance) > (GravitoidsPanel.PANEL_WIDTH / 2.0)) {
+				if (getXPosition() < motivation.getXPosition()) {
+					// We're to the left of them, move them to our left
+					
+					temporaryX = motivation.getXPosition() - GravitoidsPanel.PANEL_WIDTH;
+				} else {
+					// We're to the right of them, move them to our right
+					
+					temporaryX = motivation.getXPosition() + GravitoidsPanel.PANEL_WIDTH;
+				}
+			}
+			
+			if (Math.abs(yDistance) > (GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
+				if (getYPosition() < motivation.getYPosition()) {
+					// We're above them, move them above us
+					
+					temporaryY = motivation.getYPosition() - GravitoidsPanel.PANEL_HEIGHT;
+				} else {
+					// We're below them, move them below us
+					
+					temporaryY = motivation.getYPosition() + GravitoidsPanel.PANEL_HEIGHT;
+				}
+			}
+			
+			g.drawLine((int) getXPosition(), (int) getYPosition(), (int) temporaryX, (int) temporaryY);
+			
+			// One from the object motivating us to where we would be off screen
+			
+			temporaryX = getXPosition();
+			temporaryY = getYPosition();
+			
+			if (Math.abs(xDistance) > (GravitoidsPanel.PANEL_WIDTH / 2.0)) {
+				if (motivation.getXPosition() < getXPosition()) {
+					// We're to the left of them, move them to our left
+					
+					temporaryX = getXPosition() - GravitoidsPanel.PANEL_WIDTH;
+				} else {
+					// We're to the right of them, move them to our right
+					
+					temporaryX = getXPosition() + GravitoidsPanel.PANEL_WIDTH;
+				}
+			}
+			
+			if (Math.abs(yDistance) > (GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
+				if (motivation.getYPosition() < getYPosition()) {
+					// We're above them, move them above us
+					
+					temporaryY = getYPosition() - GravitoidsPanel.PANEL_HEIGHT;
+				} else {
+					// We're below them, move them below us
+					
+					temporaryY = getYPosition() + GravitoidsPanel.PANEL_HEIGHT;
+				}
+			}
+			
+			g.drawLine((int) motivation.getXPosition(), (int) motivation.getYPosition(), (int) temporaryX, (int) temporaryY);
 		}
 	}
 	
