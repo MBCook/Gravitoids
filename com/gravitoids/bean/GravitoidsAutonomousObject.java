@@ -31,7 +31,8 @@ import java.util.List;
  */
 
 public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
-	private static final double MAX_OBJECT_SPEED = 100.0;
+	private static final double MAX_OBJECT_SPEED = 50.0;
+	private static final double MAX_OBJECT_THRUST = 25.0;
 	
 	private double xThrustPortion;
 	private double yThrustPortion;
@@ -53,8 +54,8 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	}
 
 	public void setThrust(double thrust) {
-		if (thrust > MAX_OBJECT_SPEED) {	// No point in asking to go faster that the universe allows
-			thrust = MAX_OBJECT_SPEED;
+		if (thrust > MAX_OBJECT_THRUST) {
+			thrust = MAX_OBJECT_THRUST;
 		}
 		
 		this.thrust = thrust;
