@@ -67,6 +67,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private static final int NUM_SHIPS = 10;
 	
+	private static final int MAX_FRAMES_PER_TRIAL = 3600;
+	
 	// Statistics stuff
 
 	private long statsInterval = 0L;		// in ns
@@ -93,6 +95,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	
 	private long generation = 0;
 	private int trial = 0;
+	private int framesInCurrentTrial = 0;
 	
 	private final int MAX_TRIALS = 10;
 	
@@ -665,12 +668,23 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
+			framesInCurrentTrial++;
+			
+			if (framesInCurrentTrial >= MAX_FRAMES_PER_TRIAL) {
+				// Kill them all! Bwahahahahahahhaha
+				
+				deadShips.addAll(ships);
+				ships.clear();
+			}
+			
 			// Reset things if all the ships are dead
 			
 			if (ships.size() == 0) {
 				// Out of ships
 				
 				trial++;
+				
+				framesInCurrentTrial = 0;
 				
 				if (trial == MAX_TRIALS) {
 					// Breed new ships, start a new trial

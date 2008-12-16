@@ -415,8 +415,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double xDistance = getXPosition() - motivation.getXPosition();
 		double yDistance = getYPosition() - motivation.getYPosition();
 		
-		if ((xDistance < GravitoidsPanel.PANEL_WIDTH / 2.0)
-				&& (yDistance < GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
+		if ((Math.abs(xDistance) < GravitoidsPanel.PANEL_WIDTH / 2.0)
+				&& (Math.abs(yDistance) < GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
 			// The simple case. Just one line directly between the objects.
 			
 			g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivation.getXPosition(), (int) motivation.getYPosition());
