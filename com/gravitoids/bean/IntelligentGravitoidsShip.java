@@ -36,7 +36,7 @@ import com.gravitoids.panel.GravitoidsPanel;
 public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	// The chances of a mutation, change rate of a small mutation
 	
-	private static final double MUTATION_RATE = 0.1;
+	private static final double MUTATION_RATE = 0.2;
 	private static final double MINI_MUTATION = 0.2;
 	
 	// Whether we want to draw the insight into why this object is behaving like it does
@@ -151,6 +151,10 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		return age;
 	}
 	
+	public void clearAge() {
+		age = 0L;
+	}
+	
 	public double calculateFromBrain(double input, int aTerm, int bTerm, int cTerm) {
 		return input * input * brain[aTerm] +
 				input * brain[bTerm] +
@@ -254,14 +258,14 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	public void prepareMove(GravitoidsObject[] theirObjects) {
 		// Prepare arrays to hold stuff we'll be messing with, and how much we care
 		
-		GravitoidsObject[] objects = new GravitoidsObject[theirObjects.length + 2];	// 2 more so we can track walls
+		GravitoidsObject[] objects = new GravitoidsObject[theirObjects.length];
 		
 		double[] weights = new double[objects.length];	// How much we care
 		double[] headings = new double[objects.length];	// Which heading to go in
 		
 		// Assess each object in the universe we are told about
 		
-		for (int i = 0; i < objects.length - 2; i++) {
+		for (int i = 0; i < objects.length; i++) {
 			// Get what we're working with
 			
 			GravitoidsObject object = theirObjects[i];
@@ -415,8 +419,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		double xDistance = getXPosition() - motivation.getXPosition();
 		double yDistance = getYPosition() - motivation.getYPosition();
 		
-		if ((Math.abs(xDistance) < GravitoidsPanel.PANEL_WIDTH / 2.0)
-				&& (Math.abs(yDistance) < GravitoidsPanel.PANEL_HEIGHT / 2.0)) {
+		if ((Math.abs(xDistance) < (GravitoidsPanel.PANEL_WIDTH / 2.0))
+				&& (Math.abs(yDistance) < (GravitoidsPanel.PANEL_HEIGHT / 2.0))) {
 			// The simple case. Just one line directly between the objects.
 			
 			g.drawLine((int) getXPosition(), (int) getYPosition(), (int) motivation.getXPosition(), (int) motivation.getYPosition());
@@ -497,7 +501,9 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		// Do the simple breeding
 		
 		for (int i = 0; i < BRAIN_SIZE; i++) {	// Randomly select someone's genes
-			brain[i] = Math.random() > 0.5 ? one.brain[i] : two.brain[i];
+			double coin = Math.random();
+			
+			brain[i] = coin > 0.5 ? one.brain[i] : two.brain[i];
 		}
 		
 		// Now, handle mutation
@@ -522,8 +528,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			if (num < MUTATION_RATE) {
 				// Total replacement
 				
+				double oldBrain = brain[i];
+				
 				brain[i] = Math.random() * 2.0 - 1.0;
-				evolutionDirection[i] = 0;					// We didn't move
+				
+				evolutionDirection[i] = brain[i] == oldBrain ? 0 : (brain[i] < oldBrain ? -1 : 1);
 			} else if (num < 2.0 * MUTATION_RATE) {
 				// Minor mutation
 				// See if we need a direction to mutate in

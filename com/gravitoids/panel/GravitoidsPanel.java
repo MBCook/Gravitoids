@@ -5,7 +5,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -261,28 +263,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			saveDeadShips();
 			
 			generation++;
-			
-			// Copy the first ten entries over
-			/*
-			for (int i = 0; i < 10; i++) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get(i));
-				
-				igs.setName(igs.toString());
-				
-				igs.setRadius(5.0);
-				igs.setMass(1.0);
-				igs.setMoveable(true);
-				igs.setThrust(0.0);
-				igs.setXPosition(PANEL_WIDTH / 2.0);
-				igs.setYPosition(PANEL_HEIGHT / 2.0);
-				igs.setXSpeed(0.0);
-				igs.setYSpeed(0.0);
-				igs.setXThrustPortion(0.0);
-				igs.setXThrustPortion(0.0);
-				
-				ships.add(igs);
-			}
-			*/
+
+			// Whoever did best gets to automatically move on
 			
 			ships.add(deadShips.get(0));
 			
@@ -313,79 +295,6 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
-			// Now do it agian for the absolute cream of the crop, so they can breed more
-			/*
-			for (int i = 0; i < 3; i++) {
-				for (int j = 1; j < 5; j++) {
-					if (i == j) {
-						continue;
-					}
-					
-					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
-					
-					igs.setName(igs.toString());
-					
-					igs.setRadius(5.0);
-					igs.setMass(1.0);
-					igs.setMoveable(true);
-					igs.setThrust(0.0);
-					igs.setXPosition(PANEL_WIDTH / 2.0);
-					igs.setYPosition(PANEL_HEIGHT / 2.0);
-					igs.setXSpeed(0.0);
-					igs.setYSpeed(0.0);
-					igs.setXThrustPortion(0.0);
-					igs.setXThrustPortion(0.0);
-					
-					ships.add(igs);
-				}
-			}
-			
-			for (int i = 0; i < 1; i++) {	// Top only
-				for (int j = 1; j < 5; j++) {
-					if (i == j) {
-						continue;
-					}
-					
-					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
-					
-					igs.setName(igs.toString());
-					
-					igs.setRadius(5.0);
-					igs.setMass(1.0);
-					igs.setMoveable(true);
-					igs.setThrust(0.0);
-					igs.setXPosition(PANEL_WIDTH / 2.0);
-					igs.setYPosition(PANEL_HEIGHT / 2.0);
-					igs.setXSpeed(0.0);
-					igs.setYSpeed(0.0);
-					igs.setXThrustPortion(0.0);
-					igs.setXThrustPortion(0.0);
-					
-					ships.add(igs);
-				}
-			}
-			*/
-			// Now 10 random ships from last run
-			/*
-			for (int i = 0; i < 10; i++) {
-				IntelligentGravitoidsShip igs = new IntelligentGravitoidsShip(deadShips.get((int) (Math.random() * NUM_SHIPS)));
-				
-				igs.setName(igs.toString());
-				
-				igs.setRadius(5.0);
-				igs.setMass(1.0);
-				igs.setMoveable(true);
-				igs.setThrust(0.0);
-				igs.setXPosition(PANEL_WIDTH / 2.0);
-				igs.setYPosition(PANEL_HEIGHT / 2.0);
-				igs.setXSpeed(0.0);
-				igs.setYSpeed(0.0);
-				igs.setXThrustPortion(0.0);
-				igs.setXThrustPortion(0.0);
-				
-				ships.add(igs);
-			}
-			*/
 			// Add random ships to fill things up
 			
 			while (ships.size() < NUM_SHIPS) {
@@ -410,6 +319,12 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Clear the dead list
 			
 			deadShips.clear();
+			
+			// Make sure the ages are reset
+			
+			for (IntelligentGravitoidsShip ship : ships) {
+				ship.clearAge();
+			}
 		}
 	}
 	
@@ -780,10 +695,17 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			}
 		}
 
+		// Turn on anti-aliasing
+
+		Graphics2D g2d = (Graphics2D) dbg;
+		
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		
 		// Draw stuff
 
-		double nt;
-		double ts = System.nanoTime();
+		//double nt;
+		//double ts = System.nanoTime();
 
 		dbg.setColor(Color.WHITE);
 		
