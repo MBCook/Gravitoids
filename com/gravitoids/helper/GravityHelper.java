@@ -81,8 +81,8 @@ public class GravityHelper {
 		
 		// The numbers
 		
-		double yForce = Math.sin(angle) * forceOfGravity * (one.getXPosition() > two.getXPosition() ? -1 : 1);
 		double xForce = Math.cos(angle) * forceOfGravity * (one.getXPosition() > two.getXPosition() ? -1 : 1);
+		double yForce = Math.sin(angle) * forceOfGravity * (one.getYPosition() > two.getYPosition() ? -1 : 1);
 		
 		// Now set the new velocities, dividing by the mass so results are correct
 		
