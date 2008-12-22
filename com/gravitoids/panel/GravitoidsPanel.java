@@ -67,7 +67,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private static final int MAX_FRAME_SKIPS = 5;		// Maximum number of frames to skip at once
 	private static final int NUM_FPS = 10;		// How many FPS we keep for calculations
 
-	private static final int NUM_SHIPS = 10;
+	private static final int NUM_SHIPS = 20;
 	
 	private static final int MAX_FRAMES_PER_TRIAL = 3600;
 	
@@ -268,15 +268,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			ships.add(deadShips.get(0));
 			
-			// Now make ~9 children children from the top 10 survivors
+			// Now make ~15 children by mutating the top few ships
 			
-			for (int i = 0; i < 3; i++) {
-				for (int j = 1; j < 3; j++) {
-					if (i == j) {
-						continue;
-					}
-					
-					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.breed(deadShips.get(i), deadShips.get(j));
+			for (int i = 0; i < 5; i++) {
+				for (int j = 0; j < 3; j++) {
+					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.mutate(deadShips.get(i));
 					
 					igs.setName(igs.toString());
 					

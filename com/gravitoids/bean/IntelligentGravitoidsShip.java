@@ -208,7 +208,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		//direction = calculateFromBrain(direction, OBJECT_DIRECTION_A_TERM, OBJECT_DIRECTION_B_TERM, OBJECT_DIRECTION_C_TERM);
 		
-		direction = direction + Math.PI;
+		direction = direction + Math.PI;	// Make the direction point away from the object
 		
 		while (direction > 2.0 * Math.PI) {	// Clamp it
 			direction -= 2.0 * Math.PI;
@@ -237,7 +237,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		xSpeedDelta = xSpeedDelta < 0.0 ? 0.0 : xSpeedDelta;	// Mark we don't care about negative speeds
 		ySpeedDelta = ySpeedDelta < 0.0 ? 0.0 : ySpeedDelta;
 		
-		double speed = Math.sqrt(xSpeedDelta * xSpeedDelta + ySpeedDelta * ySpeedDelta);
+		double speed = Math.sqrt(Math.pow(xSpeedDelta, 2.0) + Math.pow(ySpeedDelta, 2.0));
 		
 		speed = calculateFromBrain(speed, OBJECT_SPEED_A_TERM, OBJECT_SPEED_B_TERM, OBJECT_SPEED_C_TERM);
 		
@@ -488,6 +488,74 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			g.drawLine((int) motivation.getXPosition(), (int) motivation.getYPosition(), (int) temporaryX, (int) temporaryY);
 		}
+	}
+	
+	public static IntelligentGravitoidsShip mutate(IntelligentGravitoidsShip source) {
+		// Come up with the space to hold our new brain
+		
+		IntelligentGravitoidsShip ship = new IntelligentGravitoidsShip();
+		
+		double[] brain = ship.getBrain();
+		int[] evolutionDirection = ship.getEvolutionDirection();
+		
+		// Copy the characteristics of the source over
+		
+		for (int i = 0; i < BRAIN_SIZE; i++) {	// Randomly select someone's genes
+			brain[i] = source.getBrain()[i];
+		}
+		
+		// Now, mutation
+		
+		for (int i = 0; i < BRAIN_SIZE; i++) {
+			// First, we'll figure out what direction to evolve in
+			
+			if (Math.random() > 0.3) {
+				// Things go in the direction of our parrents
+				
+				evolutionDirection[i] = source.getEvolutionDirection()[i];
+			} else {
+				// New direction
+				
+				evolutionDirection[i] = Math.random() > 0.5 ? 1 : -1;
+			}
+			
+			// Now figure out if we are evolving
+			
+			double num = Math.random();
+			
+			if (num < MUTATION_RATE) {
+				// Total replacement
+				
+				double oldBrain = brain[i];
+				
+				brain[i] = Math.random() * 2.0 - 1.0;
+				
+				evolutionDirection[i] = brain[i] == oldBrain ? 0 : (brain[i] < oldBrain ? -1 : 1);
+			} else if (num < 2.0 * MUTATION_RATE) {
+				// Minor mutation
+				// See if we need a direction to mutate in
+				
+				if (evolutionDirection[i] == 0) {
+					evolutionDirection[i] = Math.random() > 0.5 ? 1 : -1;
+				}
+				
+				// Change value by up to MINI_MUTATION, plus or minus based on evolutionDirection
+				
+				brain[i] = brain[i] + (Math.random() * ((double) evolutionDirection[i])) * MINI_MUTATION;
+				
+				if (brain[i] > 1.0) {	// Clamp to the limits
+					brain[i] = 1.0;
+				} else if (brain[i] < -1.0) {
+					brain[i] = -1.0;
+				}
+			} else {
+				// Nothing changes
+			}
+		}
+		
+		// Return it
+		
+		return ship;
 	}
 	
 	public static IntelligentGravitoidsShip breed(IntelligentGravitoidsShip one, IntelligentGravitoidsShip two) {
