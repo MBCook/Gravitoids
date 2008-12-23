@@ -496,16 +496,14 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				paintScreen();
 			}
 
-			afterTime = System.nanoTime();
-			
 			if (isShouldExecuteStep) {
 				// Simulate that the frame took just the right amount of time
 				
 				afterTime = beforeTime + period;
+			} else {
+				// Figure out how long this render/paint cycle took
 				
-				// Mark that we're shouldn't run another step
-				
-				isShouldExecuteStep = false;
+				afterTime = System.nanoTime();				
 			}
 			
 			timeDiff = afterTime - beforeTime;
@@ -534,7 +532,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				 the required FPS. */
 			int skips = 0;
 
-			while((excess > period) && (skips < MAX_FRAME_SKIPS)) {
+			// Note we don't want extra frames when we're working in step mode
+			
+			while((!isShouldExecuteStep) && (excess > period) && (skips < MAX_FRAME_SKIPS)) {
 				excess -= period;
 				gameUpdate();		 // update state but don't render
 				skips++;
@@ -542,6 +542,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 			framesSkipped += skips;
 			storeStats();
+			
+			if (isShouldExecuteStep) {
+				isShouldExecuteStep = false;	// We ran our step, that's it
+			}
 		}
 
 		printStats();
