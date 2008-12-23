@@ -177,8 +177,6 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				brain[cTerm];
 	}
 	
-
-	
 	private double fixSpeedDelta(double speedDelta, double ourCoord, double theirCoord, double maxValue) {
 		double distance = ourCoord - theirCoord;
 		
@@ -368,21 +366,41 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				
 				// Now we have to add the two thrust vectors
 				
-				double xThrust = Math.cos(headings[importantIndex]) * newThrustA;
-				double yThrust = Math.sin(headings[importantIndex]) * newThrustA;
+				double theirXPosition = mainMotivation.getXPosition();
 				
-				xThrust += Math.cos(headings[secondImportantIndex]) * newThrustB;
-				yThrust += Math.sin(headings[secondImportantIndex]) * newThrustB;
+				if (Math.abs(getXPosition() - theirXPosition) > GravitoidsPanel.PANEL_WIDTH / 2.0) {
+					if (theirXPosition > getXPosition()) {
+						theirXPosition -= GravitoidsPanel.PANEL_WIDTH;
+					} else {
+						theirXPosition += GravitoidsPanel.PANEL_WIDTH;
+					}
+				}
+
+				double xThrust = Math.cos(headings[importantIndex]) * newThrustA * (getXPosition() > theirXPosition ? -1 : 1);
+				double yThrust = Math.sin(headings[importantIndex]) * newThrustA * (getXPosition() > theirXPosition ? -1 : 1);
+				
+				theirXPosition = secondMotivation.getXPosition();
+							
+				if (Math.abs(getXPosition() - theirXPosition) > GravitoidsPanel.PANEL_WIDTH / 2.0) {
+					if (theirXPosition > getXPosition()) {
+						theirXPosition -= GravitoidsPanel.PANEL_WIDTH;
+					} else {
+						theirXPosition += GravitoidsPanel.PANEL_WIDTH;
+					}
+				}
+				
+				double secondXThrust = Math.cos(headings[secondImportantIndex]) * newThrustB * (getXPosition() > theirXPosition ? -1 : 1);
+				double secondYThrust = Math.sin(headings[secondImportantIndex]) * newThrustB * (getXPosition() > theirXPosition ? -1 : 1);
 				
 				// Now we have to get that back into a thrust and thrust percentages
 				// Get the total thrust, then normalize the two vector parts
 				
-				double factor = Math.sqrt(Math.pow(xThrust, 2.0) + Math.pow(yThrust, 2.0));
+				double factor = Math.sqrt(Math.pow(xThrust + secondXThrust, 2.0) + Math.pow(yThrust + secondYThrust, 2.0));
 				
 				setThrust(factor);
 				
-				setXThrustPortion(xThrust / factor);
-				setYThrustPortion(yThrust / factor);
+				setXThrustPortion((xThrust + secondXThrust) / factor);
+				setYThrustPortion((yThrust + secondYThrust) / factor);
 			} else {	
 				// Just one, this is easy
 				
@@ -394,8 +412,18 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 				
 				// Set our heading
 				
-				setXThrustPortion(Math.cos(headings[importantIndex]));
-				setYThrustPortion(Math.sin(headings[importantIndex]));
+				double theirXPosition = mainMotivation.getXPosition();
+				
+				if (Math.abs(getXPosition() - theirXPosition) > GravitoidsPanel.PANEL_WIDTH / 2.0) {
+					if (theirXPosition > getXPosition()) {
+						theirXPosition -= GravitoidsPanel.PANEL_WIDTH;
+					} else {
+						theirXPosition += GravitoidsPanel.PANEL_WIDTH;
+					}
+				}
+				
+				setXThrustPortion(Math.cos(headings[importantIndex]) * (getXPosition() > theirXPosition ? -1 : 1));
+				setYThrustPortion(Math.sin(headings[importantIndex]) * (getXPosition() > theirXPosition ? -1 : 1));
 			}
 		} else {
 			// We ain't scared of nothing
@@ -435,8 +463,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		if (drawThrust && getThrust() > 0.0) {
 			g.setColor(Color.RED);
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
-						(int) (getXPosition() + getXThrustPortion() * getThrust()),
-						(int) (getYPosition() + getYThrustPortion() * getThrust()));
+						(int) (getXPosition() - getXThrustPortion() * getThrust()),
+						(int) (getYPosition() - getYThrustPortion() * getThrust()));
 		}
 		
 		if (drawGravitationalPull) {

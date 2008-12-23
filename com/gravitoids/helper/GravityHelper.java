@@ -1,6 +1,8 @@
 package com.gravitoids.helper;
 
 import com.gravitoids.bean.GravitoidsObject;
+import com.gravitoids.main.GravitoidsGame;
+import com.gravitoids.panel.GravitoidsPanel;
 
 /**
  * Copyright (c) 2008, Michael Cook
@@ -81,8 +83,22 @@ public class GravityHelper {
 		
 		// The numbers
 		
-		double xForce = Math.cos(angle) * forceOfGravity * (one.getXPosition() > two.getXPosition() ? -1 : 1);
-		double yForce = Math.sin(angle) * forceOfGravity * (one.getYPosition() > two.getYPosition() ? -1 : 1);
+		double theirXPosition = two.getXPosition();
+		
+		if (Math.abs(one.getXPosition() - theirXPosition) > GravitoidsPanel.PANEL_WIDTH / 2.0) {
+			if (theirXPosition > one.getXPosition()) {
+				theirXPosition -= GravitoidsPanel.PANEL_WIDTH;
+			} else {
+				theirXPosition += GravitoidsPanel.PANEL_WIDTH;
+			}
+		}
+		
+		// Why do BOTH of these use theirXPosition and not one X one Y? I don't know!
+		// I'm guessing it's a negative angle thing, but I can't remember that bit of trig
+		//		well enough at the moment to really care. This works, that's what matters.
+		
+		double xForce = Math.cos(angle) * forceOfGravity * (one.getXPosition() > theirXPosition ? -1 : 1);
+		double yForce = Math.sin(angle) * forceOfGravity * (one.getXPosition() > theirXPosition ? -1 : 1);
 		
 		// Now set the new velocities, dividing by the mass so results are correct
 

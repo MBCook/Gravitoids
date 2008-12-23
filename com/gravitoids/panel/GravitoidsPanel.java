@@ -172,7 +172,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private synchronized void prepareUniverse() {
 		int numberToMake = ((int) (Math.random() * 4)) + 3;
-		numberToMake = 1;
+		numberToMake = 2;
 		universeObjects = new GravitoidsCircleObject[numberToMake];
 		
 		for (int i = 0; i < numberToMake; i++) {
@@ -427,6 +427,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			// Kill everyone
 			deadShips.addAll(ships);
 			ships.clear();
+			
+			needRerender = true;
 		}
 		
 		if (needRerender) {
