@@ -472,6 +472,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
 						(int) (getXPosition() + 100.0 * getXGravitationalForce()),
 						(int) (getYPosition() + 100.0 * getYGravitationalForce()));
+			resetGravitationalForce();
 		}
 	}
 	

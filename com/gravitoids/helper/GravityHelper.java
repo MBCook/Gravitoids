@@ -102,15 +102,15 @@ public class GravityHelper {
 		
 		// Now set the new velocities, dividing by the mass so results are correct
 
-		one.setXGravitationalForce(xForce / one.getMass());
-		one.setYGravitationalForce(yForce / one.getMass());
+		one.setXGravitationalForce(one.getXGravitationalForce() + (xForce / one.getMass()));
+		one.setYGravitationalForce(one.getYGravitationalForce() + (yForce / one.getMass()));
 		
 		one.setXSpeed(one.getXSpeed() + one.getXGravitationalForce());
 		one.setYSpeed(one.getYSpeed() + one.getYGravitationalForce());
 		
 		if (moveObjectTwo) {
-			two.setXGravitationalForce(xForce / two.getMass());
-			two.setYGravitationalForce(yForce / two.getMass());
+			two.setXGravitationalForce(two.getXGravitationalForce() + (xForce / two.getMass()));
+			two.setYGravitationalForce(two.getYGravitationalForce() + (yForce / two.getMass()));
 			
 			two.setXSpeed(two.getXSpeed() + two.getXGravitationalForce());
 			two.setYSpeed(two.getYSpeed() + two.getYGravitationalForce());
