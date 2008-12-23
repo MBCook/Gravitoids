@@ -2,6 +2,8 @@ package com.gravitoids.bean;
 
 import java.awt.Graphics;
 
+import com.gravitoids.helper.WrappingHelper;
+
 /**
  * Copyright (c) 2008, Michael Cook
  * All rights reserved.
@@ -41,6 +43,9 @@ public abstract class GravitoidsObject {
 	private double xSpeed;
 	private double ySpeed;
 
+	private double xGravitationalForce;
+	private double yGravitationalForce;
+	
 	private double mass;
 	
 	private boolean moveable;
@@ -58,44 +63,13 @@ public abstract class GravitoidsObject {
 	}
 	
 	public boolean hasCollided(GravitoidsObject other) {
-		// TODO: This could be optimized with some simple bounds checks to let us quickly
-		//			rule out any possibility anything ever happened
+		// TODO: Some quick bounds checks could prevent the distance calculation in many cases
 		
-		// Check along three points, incase the objects are moving really fast
-		
-		double oneXDelta = getXPosition() - getOldXPosition();
-		double oneYDelta = getYPosition() - getOldYPosition();
-		
-		double twoXDelta = other.getXPosition() - other.getOldXPosition();
-		double twoYDelta = other.getYPosition() - other.getOldYPosition();
-		
-		double i = 1.0;
-		
-		//for (double i = 0.25; i <= 1.0; i += 0.25) {
-			// X distance between the two at that time point
+		double dist = WrappingHelper.calculateDistanceToObject(this, other);
 			
-			double xDist = ((oneXDelta * i) + getOldXPosition()) - ((twoXDelta * i) + other.getOldXPosition());
-			
-			// Y distance between the two at that time point
-			
-			double yDist = ((oneYDelta * i) + getOldYPosition()) - ((twoYDelta * i) + other.getOldYPosition());
-			
-			// Now the actual distance
-			
-			double dist = Math.sqrt(xDist * xDist + yDist * yDist);
-			
-			if (dist < getRadius() + other.getRadius()) {
-				// Circles overlap, colission
-			
-//				System.out.println(getXPosition() + ", " + getYPosition());
-//				System.out.println(other.getXPosition() + ", " + other.getYPosition());
-//				System.out.println(getRadius() + ", " + other.getRadius());
-
-				return true;
-			}
-		//}
-		
-		// If we got here, they never collided
+		if (dist < getRadius() + other.getRadius()) {
+			return true;
+		}
 		
 		return false;
 	}
@@ -168,5 +142,21 @@ public abstract class GravitoidsObject {
 	}
 
 	public abstract void draw(Graphics g);
+
+	public double getXGravitationalForce() {
+		return xGravitationalForce;
+	}
+
+	public void setXGravitationalForce(double gravitationalForce) {
+		xGravitationalForce = gravitationalForce;
+	}
+
+	public double getYGravitationalForce() {
+		return yGravitationalForce;
+	}
+
+	public void setYGravitationalForce(double gravitationalForce) {
+		yGravitationalForce = gravitationalForce;
+	}
 }
 

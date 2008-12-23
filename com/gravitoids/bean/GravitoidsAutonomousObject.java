@@ -118,7 +118,7 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 		if (Math.sqrt(Math.pow(getXSpeed(), 2.0) + Math.pow(getYSpeed(), 2.0)) > MAX_OBJECT_SPEED) {
 			// OK, time to clamp
 			
-			double ratio = Math.tan(getYSpeed() / getXSpeed());
+			double ratio = Math.atan(getYSpeed() / getXSpeed());
 			
 			setXSpeed(MAX_OBJECT_SPEED * Math.cos(ratio));
 			setYSpeed(MAX_OBJECT_SPEED * Math.sin(ratio));

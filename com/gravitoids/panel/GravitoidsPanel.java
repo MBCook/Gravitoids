@@ -172,7 +172,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private synchronized void prepareUniverse() {
 		int numberToMake = ((int) (Math.random() * 4)) + 3;
-		
+		numberToMake = 1;
 		universeObjects = new GravitoidsCircleObject[numberToMake];
 		
 		for (int i = 0; i < numberToMake; i++) {
@@ -186,7 +186,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			double magicNumber = Math.random();					// Heavier objects are bigger
 			
-			gco.setMass(100 + magicNumber * 900.0);				// Up to 1000 units of mass
+			gco.setMass(900 + magicNumber * 100.0);				// Up to 1000 units of mass
 			gco.setRadius(4.0 + Math.floor(magicNumber * 12.0));	// Up to 4 to 16 pixels radius
 			
 			//if (i < 7) {
@@ -411,6 +411,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 		} else if (keyCode == KeyEvent.VK_T) {
 			IntelligentGravitoidsShip.setDrawThrust(!IntelligentGravitoidsShip.isDrawThrust());
+		} else if (keyCode == KeyEvent.VK_G) {
+			IntelligentGravitoidsShip.setDrawGravitationalPull(!IntelligentGravitoidsShip.isDrawGravitationalPull());
 		} else if (keyCode == KeyEvent.VK_K) {
 			// Kill everyone
 			deadShips.addAll(ships);
@@ -496,14 +498,16 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				paintScreen();
 			}
 
+			afterTime = System.nanoTime();
+			
 			if (isShouldExecuteStep) {
 				// Simulate that the frame took just the right amount of time
 				
 				afterTime = beforeTime + period;
-			} else {
-				// Figure out how long this render/paint cycle took
 				
-				afterTime = System.nanoTime();				
+				// Mark that we're shouldn't run another step
+				
+				isShouldExecuteStep = false;
 			}
 			
 			timeDiff = afterTime - beforeTime;
@@ -532,9 +536,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				 the required FPS. */
 			int skips = 0;
 
-			// Note we don't want extra frames when we're working in step mode
-			
-			while((!isShouldExecuteStep) && (excess > period) && (skips < MAX_FRAME_SKIPS)) {
+			while((excess > period) && (skips < MAX_FRAME_SKIPS)) {
 				excess -= period;
 				gameUpdate();		 // update state but don't render
 				skips++;
@@ -542,10 +544,6 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 			framesSkipped += skips;
 			storeStats();
-			
-			if (isShouldExecuteStep) {
-				isShouldExecuteStep = false;	// We ran our step, that's it
-			}
 		}
 
 		printStats();
@@ -559,8 +557,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			// First on our main objects
 			
-			for (int i = 0; i < universeObjects.length - 1; i++) {
+			for (int i = 0; i < universeObjects.length; i++) {
 				for (int j = i + 1; j < universeObjects.length; j++) {
+					if (i == j) {
+						continue;	// Why simulate gravity against ourselves?
+					}
 					gh.simulateGravity(universeObjects[i], universeObjects[j]);
 				}
 				

@@ -70,7 +70,7 @@ public class GravityHelper {
 		
 		double massProduct = one.getMass() * two.getMass();
 		
-		double forceOfGravity = (gravitationalConstant * massProduct) / (distance * distance);
+		double forceOfGravity = (gravitationalConstant * massProduct) / Math.pow(distance, 2.0);
 		
 		if (forceOfGravity > maxInfluence)
 			forceOfGravity = maxInfluence;
@@ -85,13 +85,19 @@ public class GravityHelper {
 		double yForce = Math.sin(angle) * forceOfGravity * (one.getYPosition() > two.getYPosition() ? -1 : 1);
 		
 		// Now set the new velocities, dividing by the mass so results are correct
+
+		one.setXGravitationalForce(xForce / one.getMass());
+		one.setYGravitationalForce(yForce / one.getMass());
 		
-		one.setXSpeed(one.getXSpeed() + (xForce / one.getMass()));
-		one.setYSpeed(one.getYSpeed() + (yForce / one.getMass()));
+		one.setXSpeed(one.getXSpeed() + one.getXGravitationalForce());
+		one.setYSpeed(one.getYSpeed() + one.getYGravitationalForce());
 		
 		if (moveObjectTwo) {
-			two.setXSpeed(two.getXSpeed() - (xForce / two.getMass()));
-			two.setYSpeed(two.getYSpeed() - (yForce / two.getMass()));
+			two.setXGravitationalForce(xForce / two.getMass());
+			two.setYGravitationalForce(yForce / two.getMass());
+			
+			two.setXSpeed(two.getXSpeed() + two.getXGravitationalForce());
+			two.setYSpeed(two.getYSpeed() + two.getYGravitationalForce());
 		}
 	}
 	

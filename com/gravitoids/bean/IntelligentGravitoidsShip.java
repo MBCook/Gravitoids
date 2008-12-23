@@ -43,6 +43,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	private static boolean drawMotiviation = true;
 	private static boolean drawThrust = true;
+	private static boolean drawGravitationalPull = true;
 	
 	// The object(s) that are motivating us
 	
@@ -127,6 +128,14 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		IntelligentGravitoidsShip.drawThrust = drawThrust;
 	}
 	
+	public static boolean isDrawGravitationalPull() {
+		return drawGravitationalPull;
+	}
+	
+	public static void setDrawGravitationalPull(boolean drawGravity) {
+		IntelligentGravitoidsShip.drawGravitationalPull = drawGravity;
+	}
+	
 	public static boolean isDrawMotivation() {
 		return drawMotiviation;
 	}
@@ -193,7 +202,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		return speedDelta;
 	}
 	
-	private void asessObject(GravitoidsObject object, double[] weights, double[] headings, int index) {
+	private void asessObject(GravitoidsObject object, double[] weights, double[] headings, double[] distances, int index) {
 		// Figure out our distance from it, used in the gravity calculation
 		
 		double distance = WrappingHelper.calculateDistanceToObject(this, object); 
@@ -210,11 +219,11 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		direction = direction + Math.PI;	// Make the direction point away from the object
 		
-		while (direction > 2.0 * Math.PI) {	// Clamp it
+		while (direction > Math.PI) {	// Clamp it
 			direction -= 2.0 * Math.PI;
 		}
 		
-		while (direction < 0.0) {
+		while (direction < Math.PI) {
 			direction += 2.0 * Math.PI;
 		} 
 		
@@ -253,6 +262,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		weights[index] = moveability + gravity + size + speed;
 		headings[index] = direction;
+		distances[index] = distance;
 	}
 	
 	public void prepareMove(GravitoidsObject[] theirObjects) {
@@ -262,6 +272,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		
 		double[] weights = new double[objects.length];	// How much we care
 		double[] headings = new double[objects.length];	// Which heading to go in
+		double[] distances = new double[objects.length];	// How far away it is
 		
 		// Assess each object in the universe we are told about
 		
@@ -272,7 +283,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			
 			objects[i] = object;
 			
-			asessObject(object, weights, headings, i);
+			asessObject(object, weights, headings, distances, i);
 		}
 		
 		// Now that we have all that, we need to find what we care about most
@@ -290,18 +301,28 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 
 		for (int i = 0; i < weights.length; i++) {
 			if ((weights[i] >= mostImportant) && (weights[i] > minimumFear)) {
-				secondMostImportant = mostImportant;
-				mostImportant = weights[i];
+				// Must be either more freightening, or closer
 				
-				secondMotivation = mainMotivation;
-				mainMotivation = objects[i];
-				
-				secondImportantIndex = importantIndex;
-				importantIndex = i;
+				if ((weights[i] > mostImportant) ||
+						(distances[i] < (importantIndex == -1 ? Double.POSITIVE_INFINITY : distances[importantIndex]))) { 
+					secondMostImportant = mostImportant;
+					mostImportant = weights[i];
+					
+					secondMotivation = mainMotivation;
+					mainMotivation = objects[i];
+					
+					secondImportantIndex = importantIndex;
+					importantIndex = i;
+				}
 			} else if ((weights[i] >= secondMostImportant) && (weights[i] > minimumFear)) {
-				secondMostImportant = weights[i];
-				secondMotivation = objects[i];
-				secondImportantIndex = i;
+				// Must be either more freightening, or closer
+				
+				if ((weights[i] > mostImportant) ||
+						(distances[i] < (secondImportantIndex == -1 ? Double.POSITIVE_INFINITY : distances[secondImportantIndex]))) {
+					secondMostImportant = weights[i];
+					secondMotivation = objects[i];
+					secondImportantIndex = i;
+				}
 			}
 		}
 		/*
@@ -409,6 +430,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 			g.drawLine((int) getXPosition(), (int) getYPosition(),
 						(int) (getXPosition() + getXThrustPortion() * getThrust()),
 						(int) (getYPosition() + getYThrustPortion() * getThrust()));
+		}
+		
+		if (drawGravitationalPull) {
+			g.setColor(Color.GREEN);
+			g.drawLine((int) getXPosition(), (int) getYPosition(),
+						(int) (getXPosition() + 100.0 * getXGravitationalForce()),
+						(int) (getYPosition() + 100.0 * getYGravitationalForce()));
 		}
 	}
 	

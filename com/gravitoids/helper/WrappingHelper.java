@@ -99,6 +99,6 @@ public class WrappingHelper {
 			}
 		}
 		
-		return Math.atan((one.getXPosition() - theirX) / (one.getYPosition() - theirY));
+		return Math.atan((one.getYPosition() - theirY) / (one.getXPosition() - theirX));
 	}
 }
