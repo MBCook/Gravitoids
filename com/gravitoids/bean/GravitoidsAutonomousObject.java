@@ -34,14 +34,25 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	private static final double MAX_OBJECT_SPEED = 50.0;
 	private static final double MAX_OBJECT_THRUST = 25.0;
 	
-	private double xThrustPortion;
-	private double yThrustPortion;
+	private double xThrustPortion = 0.0;
+	private double yThrustPortion = 0.0;
 	
 	private double thrust = 0.0;
 	
 	private List<Double> oldXThrusts = new ArrayList<Double>();
 	private List<Double> oldYThrusts = new ArrayList<Double>();
 
+	public void resetObject() {
+		super.resetObject();
+		
+		xThrustPortion = 0.0;
+		yThrustPortion = 0.0;
+		thrust = 0.0;
+		
+		oldXThrusts.clear();
+		oldYThrusts.clear();
+	}
+	
 	public void normalizeThrust() {
 		double total = Math.sqrt(Math.pow(xThrustPortion, 2.0) + Math.pow(yThrustPortion, 2.0));
 		

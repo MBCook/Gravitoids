@@ -88,6 +88,13 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 
 	private long age = 0L;
 	
+	public void resetObject() {
+		super.resetObject();
+		
+		mainMotivation = null;
+		secondMotivation = null;
+	}
+	
 	public IntelligentGravitoidsShip() {
 		// Give us a random brain
 		

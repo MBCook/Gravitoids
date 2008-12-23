@@ -54,6 +54,14 @@ public abstract class GravitoidsObject {
 		return 0.25;
 	}
 	
+	public void resetObject() {
+		xSpeed = 0.0;
+		ySpeed = 0.0;
+		
+		xGravitationalForce = 0.0;
+		yGravitationalForce = 0.0;
+	}
+	
 	public double getOldXPosition() {
 		return oldXPosition;
 	}

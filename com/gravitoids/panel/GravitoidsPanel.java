@@ -326,6 +326,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			for (IntelligentGravitoidsShip ship : ships) {
 				ship.clearAge();
+				ship.resetObject();
 			}
 		}
 	}
@@ -390,6 +391,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	public synchronized void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 
+		boolean needRerender = false;
+		
 		if ((keyCode == KeyEvent.VK_ESCAPE) ||
 			(keyCode == KeyEvent.VK_Q) ||
 			(keyCode == KeyEvent.VK_END) ||
@@ -398,25 +401,37 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			running = false;
 		} else if (keyCode == KeyEvent.VK_P) {
 			isPaused = !isPaused;
+			
+			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_S) {
 			isStepMode = !isStepMode;
 			
 			if (isStepMode) {
-				gameRender();	// Redraw the screen
-				paintScreen();
+				needRerender = true;				
 			}
 		} else if (keyCode == KeyEvent.VK_ENTER) {
 			isShouldExecuteStep = true;
 		} else if (keyCode == KeyEvent.VK_M) {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
+			
+			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_T) {
 			IntelligentGravitoidsShip.setDrawThrust(!IntelligentGravitoidsShip.isDrawThrust());
+			
+			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_G) {
 			IntelligentGravitoidsShip.setDrawGravitationalPull(!IntelligentGravitoidsShip.isDrawGravitationalPull());
+			
+			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_K) {
 			// Kill everyone
 			deadShips.addAll(ships);
 			ships.clear();
+		}
+		
+		if (needRerender) {
+			gameRender();	// Redraw the screen
+			paintScreen();
 		}
 	}
 
