@@ -93,6 +93,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private DecimalFormat timedf = new DecimalFormat("0.####");	 // 4 dp
 
 	private Font font;
+	private Font smallFont;
 	private FontMetrics metrics;
 	
 	private long generation = 0;
@@ -106,6 +107,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private Thread animator;
 	private boolean running = false;	 // used to stop the animation thread
 	private boolean isPaused = false;
+	private boolean isStepMode = false;
+	
+	private boolean isShouldExecuteStep = false;
 
 	private long period;			// period between drawing in ns
 
@@ -152,6 +156,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		
 		font = new Font("SansSerif", Font.BOLD, 24);
 		metrics = this.getFontMetrics(font);
+		
+		smallFont = new Font("SansSerif", Font.BOLD, 10);
 		
 		// Initialise timing elements
 
@@ -392,6 +398,15 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			running = false;
 		} else if (keyCode == KeyEvent.VK_P) {
 			isPaused = !isPaused;
+		} else if (keyCode == KeyEvent.VK_S) {
+			isStepMode = !isStepMode;
+			
+			if (isStepMode) {
+				gameRender();	// Redraw the screen
+				paintScreen();
+			}
+		} else if (keyCode == KeyEvent.VK_ENTER) {
+			isShouldExecuteStep = true;
 		} else if (keyCode == KeyEvent.VK_M) {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 		} else if (keyCode == KeyEvent.VK_T) {
@@ -439,8 +454,8 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	public void pauseGame() {
 		// Called when the JFrame is deactivated / iconified
 		isPaused = true;
-	} 
-
+	}
+	
 	public void stopGame() {
 		// Called when the JFrame is closing
 		running = false;
@@ -475,11 +490,24 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		running = true;
 
 		while(running) {
-			gameUpdate();
-			gameRender();
-			paintScreen();
+			if (!isStepMode || isShouldExecuteStep) {
+				gameUpdate();
+				gameRender();
+				paintScreen();
+			}
 
 			afterTime = System.nanoTime();
+			
+			if (isShouldExecuteStep) {
+				// Simulate that the frame took just the right amount of time
+				
+				afterTime = beforeTime + period;
+				
+				// Mark that we're shouldn't run another step
+				
+				isShouldExecuteStep = false;
+			}
+			
 			timeDiff = afterTime - beforeTime;
 			sleepTime = (period - timeDiff) - overSleepTime;	
 
@@ -718,6 +746,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		if (isPaused) {
 			drawPaused(dbg);
 		}
+		
+		if (isStepMode) {
+			drawStepMode(dbg);
+		}
 	}
 
 	private void drawPaused(Graphics g) {
@@ -728,6 +760,17 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 		g.setColor(Color.red);
 		g.setFont(font);
+		g.drawString(msg, x, y);
+	}
+	
+	private void drawStepMode(Graphics g) {
+		String msg = "Step Mode";
+
+		int x = 10; 
+		int y = 20;
+
+		g.setColor(Color.red);
+		g.setFont(smallFont);
 		g.drawString(msg, x, y);
 	}
 
