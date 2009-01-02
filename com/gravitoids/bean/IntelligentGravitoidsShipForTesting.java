@@ -1,7 +1,10 @@
 package com.gravitoids.bean;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Color;
+import java.awt.Graphics;
+
+import com.gravitoids.helper.WrappingHelper;
+import com.gravitoids.panel.GravitoidsPanel;
 
 /**
  * Copyright (c) 2008, Michael Cook
@@ -30,65 +33,60 @@ import java.util.List;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
-	protected static final double MAX_OBJECT_SPEED = 50.0;
-	protected static final double MAX_OBJECT_THRUST = 25.0;
-	
-	protected double xThrustPortion = 0.0;
-	protected double yThrustPortion = 0.0;
-	
-	protected double thrust = 0.0;
-	
-	protected List<Double> oldXThrusts = new ArrayList<Double>();
-	protected List<Double> oldYThrusts = new ArrayList<Double>();
-
-	public void resetObject() {
-		super.resetObject();
+public class IntelligentGravitoidsShipForTesting extends IntelligentGravitoidsShip {
+	public IntelligentGravitoidsShipForTesting(IntelligentGravitoidsShip source) {
+		// Copy our brain
 		
-		xThrustPortion = 0.0;
-		yThrustPortion = 0.0;
-		thrust = 0.0;
+		brain = new double[BRAIN_SIZE];
+		evolutionDirection = new int[BRAIN_SIZE];
 		
-		oldXThrusts.clear();
-		oldYThrusts.clear();
+		for (int i = 0; i < BRAIN_SIZE; i++) {
+			brain[i] = source.brain[i];
+			evolutionDirection[i] = source.evolutionDirection[i];
+		}
 	}
 	
-	public void normalizeThrust() {
-		double total = Math.sqrt(Math.pow(xThrustPortion, 2.0) + Math.pow(yThrustPortion, 2.0));
+	public void draw(Graphics g) {
+		// Figure out where we are
 		
-		xThrustPortion = xThrustPortion / total;
-		yThrustPortion = yThrustPortion / total;
-	}
-	
-	public double getThrust() {
-		return thrust;
-	}
-
-	public void setThrust(double thrust) {
-		if (thrust > MAX_OBJECT_THRUST) {
-			thrust = MAX_OBJECT_THRUST;
+		int r = (int) getRadius();
+		
+		int ovalDrawX = (int) getXPosition() - r;
+		int ovalDrawY = (int) getYPosition() - r;
+		
+		// Draw us
+		
+		g.setColor(Color.MAGENTA);
+		g.fillOval(ovalDrawX, ovalDrawY, r * 2, r * 2);
+		
+		// Now, if requested and in existance, draw our motivation
+		
+		if (isDrawMotivation()) {
+			if (secondMotivation != null) {
+				g.setColor(Color.LIGHT_GRAY);
+				drawMotivation(g, secondMotivation);
+			}
+			if (mainMotivation != null) {
+				g.setColor(Color.BLUE);
+				drawMotivation(g, mainMotivation);
+			}
 		}
 		
-		this.thrust = thrust;
+		if (isDrawThrust() && getThrust() > 0.0) {
+			g.setColor(Color.RED);
+			g.drawLine((int) getXPosition(), (int) getYPosition(),
+						(int) (getXPosition() - getXThrustPortion() * getThrust()),
+						(int) (getYPosition() - getYThrustPortion() * getThrust()));
+		}
+		
+		if (isDrawGravitationalPull()) {
+			g.setColor(Color.GREEN);
+			g.drawLine((int) getXPosition(), (int) getYPosition(),
+						(int) (getXPosition() + 100.0 * getXGravitationalForce()),
+						(int) (getYPosition() + 100.0 * getYGravitationalForce()));
+			resetGravitationalForce();
+		}
 	}
-
-	public double getXThrustPortion() {
-		return xThrustPortion;
-	}
-
-	public void setXThrustPortion(double thurstPortion) {
-		xThrustPortion = thurstPortion;
-	}
-
-	public double getYThrustPortion() {
-		return yThrustPortion;
-	}
-
-	public void setYThrustPortion(double thrustPortion) {
-		yThrustPortion = thrustPortion;
-	}
-
-	public abstract void prepareMove(GravitoidsObject[] stuff);
 	
 	public void move() {
 		// Calculate how fast they want to move this time
@@ -135,9 +133,9 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 			setYSpeed(MAX_OBJECT_SPEED * Math.sin(ratio));
 		}
 		
-		// Now move us based on our speed,
+		// Now don't move a bit
 		
-		super.move();
+		setXSpeed(0.0);
+		setYSpeed(0.0);
 	}
 }
-

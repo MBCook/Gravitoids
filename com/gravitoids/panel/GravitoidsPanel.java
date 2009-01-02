@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import javax.swing.JPanel;
 import com.gravitoids.bean.GravitoidsCircleObject;
 import com.gravitoids.bean.GravitoidsObject;
 import com.gravitoids.bean.IntelligentGravitoidsShip;
+import com.gravitoids.bean.IntelligentGravitoidsShipForTesting;
 import com.gravitoids.helper.GravityHelper;
 import com.gravitoids.main.GravitoidsGame;
 
@@ -106,10 +108,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	private Thread animator;
 	private boolean running = false;	 // used to stop the animation thread
-	private boolean isPaused = false;
-	private boolean isStepMode = false;
+	private boolean paused = false;
+	private boolean stepMode = false;
+	private boolean drawTestShip = false;
 	
-	private boolean isShouldExecuteStep = false;
+	private boolean shouldExecuteStep = false;
 
 	private long period;			// period between drawing in ns
 
@@ -120,6 +123,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private GravitoidsCircleObject universeObjects[];
 	private List<IntelligentGravitoidsShip> ships = new ArrayList<IntelligentGravitoidsShip>();
 	private List<IntelligentGravitoidsShip> deadShips = new ArrayList<IntelligentGravitoidsShip>();
+	private IntelligentGravitoidsShipForTesting testObject = null;
 
 	// Off screen rendering
 
@@ -144,6 +148,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		prepareUniverse();
 		prepareShips();
 		
+		testObject.setXPosition(PANEL_WIDTH / 2.0);
+		testObject.setYPosition(PANEL_HEIGHT / 2.0);
+		
 		// Set up the mouse
 
 		addMouseListener(	new MouseAdapter() {
@@ -151,6 +158,11 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 									testPress(e.getX(), e.getY());
 								}
 							});
+		addMouseMotionListener(	new MouseMotionAdapter() {
+									public void mouseDragged(MouseEvent e) {
+										testPress(e.getX(), e.getY());
+									}
+								});
 
 		// Setup our font
 		
@@ -329,6 +341,19 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				ship.resetObject();
 			}
 		}
+		
+		testObject = new IntelligentGravitoidsShipForTesting(ships.get(0));
+		
+		testObject.setRadius(5.0);
+		testObject.setMass(1.0);
+		testObject.setMoveable(true);
+		testObject.setThrust(0.0);
+		testObject.setXPosition(PANEL_WIDTH / 2.0);
+		testObject.setYPosition(PANEL_HEIGHT / 2.0);
+		testObject.setXSpeed(0.0);
+		testObject.setYSpeed(0.0);
+		testObject.setXThrustPortion(0.0);
+		testObject.setXThrustPortion(0.0);
 	}
 	
 	private void saveDeadShips() {
@@ -400,17 +425,17 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 			running = false;
 		} else if (keyCode == KeyEvent.VK_P) {
-			isPaused = !isPaused;
+			paused = !paused;
 			
 			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_S) {
-			isStepMode = !isStepMode;
+			stepMode = !stepMode;
 			
-			if (isStepMode) {
+			if (stepMode) {
 				needRerender = true;				
 			}
 		} else if (keyCode == KeyEvent.VK_ENTER) {
-			isShouldExecuteStep = true;
+			shouldExecuteStep = true;
 		} else if (keyCode == KeyEvent.VK_M) {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 			
@@ -421,6 +446,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_G) {
 			IntelligentGravitoidsShip.setDrawGravitationalPull(!IntelligentGravitoidsShip.isDrawGravitationalPull());
+			
+			needRerender = true;
+		} else if (keyCode == KeyEvent.VK_I) {
+			drawTestShip = !drawTestShip;
 			
 			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_K) {
@@ -467,12 +496,12 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 	public void resumeGame(){
 		// Called when the JFrame is activated / deiconified
-		isPaused = false;
+		paused = false;
 	} 
 
 	public void pauseGame() {
 		// Called when the JFrame is deactivated / iconified
-		isPaused = true;
+		paused = true;
 	}
 	
 	public void stopGame() {
@@ -483,17 +512,15 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	// ----------------------------------------------
 
 	private void testPress(int x, int y) {
-		// Check to see where the user clicked
-/*		if (!isPaused && !gameOver) {
-			if (fred.nearHead(x,y)) {		// was mouse press near the head?
-				gameOver = true;
-				score =	100;	// For now, hack together a score
-			} else {	 // add an obstacle if possible
-				if (!fred.touchedAt(x,y))		// was the worm's body untouched?
-					obs.add(x,y);
+		if (!paused) {
+			if ((x < PANEL_WIDTH - testObject.getRadius() / 2.0)
+					&& (x > testObject.getRadius() / 2.0) 
+					&& (y < PANEL_HEIGHT - testObject.getRadius() / 2.0)
+					&& (y > testObject.getRadius() / 2.0)) {
+				testObject.setXPosition(x);
+				testObject.setYPosition(y);
 			}
-		// We don't do anything here yet
-		} */
+		}
 	}
 
 	public void run() {
@@ -509,7 +536,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 		running = true;
 
 		while(running) {
-			if (!isStepMode || isShouldExecuteStep) {
+			if (!stepMode || shouldExecuteStep) {
 				gameUpdate();
 				gameRender();
 				paintScreen();
@@ -517,14 +544,14 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 			afterTime = System.nanoTime();
 			
-			if (isShouldExecuteStep) {
+			if (shouldExecuteStep) {
 				// Simulate that the frame took just the right amount of time
 				
 				afterTime = beforeTime + period;
 				
 				// Mark that we're shouldn't run another step
 				
-				isShouldExecuteStep = false;
+				shouldExecuteStep = false;
 			}
 			
 			timeDiff = afterTime - beforeTime;
@@ -569,7 +596,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 
 
 	private synchronized void gameUpdate() {
-		if (!isPaused) {
+		if (!paused) {
 			GravityHelper gh = GravityHelper.getInstance();
 			
 			// First on our main objects
@@ -584,6 +611,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				
 				for (int j = 0; j < ships.size(); j++) {
 					gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
+					gh.simulateGravityForOne(testObject, universeObjects[i]);
 				}
 			}
 			
@@ -592,6 +620,13 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			for (int i = 0; i < universeObjects.length; i++) {
 				universeObjects[i].move();
 				checkBounds(universeObjects[i]);
+			}
+			
+			// Prepare a move for our test object
+			
+			if (drawTestShip) {
+				checkBounds(testObject);
+				testObject.prepareMove(universeObjects);
 			}
 			
 			// Now simulate our ships
@@ -765,15 +800,19 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			ships.get(i).draw(dbg);
 		}
 		
-		if (isPaused) {
+		if (paused) {
 			drawPaused(dbg);
 		}
 		
-		if (isStepMode) {
+		if (stepMode) {
 			drawStepMode(dbg);
 		}
+		
+		if (drawTestShip) {
+			testObject.draw(dbg);
+		}
 	}
-
+	
 	private void drawPaused(Graphics g) {
 		String msg = "Game Paused";
 

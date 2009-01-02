@@ -47,12 +47,12 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	
 	// The object(s) that are motivating us
 	
-	private GravitoidsObject mainMotivation = null;
-	private GravitoidsObject secondMotivation = null;
+	protected GravitoidsObject mainMotivation = null;
+	protected GravitoidsObject secondMotivation = null;
 	
 	// How big our brain is
 	
-	private static final int BRAIN_SIZE = 15;
+	protected static final int BRAIN_SIZE = 15;
 	
 	// What each element in the brain represents
 	
@@ -81,8 +81,8 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 	private static final int OBJECT_DIRECTION_B_TERM = 16;
 	private static final int OBJECT_DIRECTION_C_TERM = 17;
 	*/
-	private double brain[] = null; 
-	private int evolutionDirection[] = null;	// Which way the brian term is moving
+	protected double brain[] = null; 
+	protected int evolutionDirection[] = null;	// Which way the brian term is moving
 	
 	private String name = null;
 
@@ -476,7 +476,7 @@ public class IntelligentGravitoidsShip extends GravitoidsAutonomousObject {
 		}
 	}
 	
-	private void drawMotivation(Graphics g, GravitoidsObject motivation) {
+	protected void drawMotivation(Graphics g, GravitoidsObject motivation) {
 		// If we are doing things directly, this is easy.
 		// If we are doing a wrap around, we'll need to draw two lines.
 		
