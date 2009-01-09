@@ -42,6 +42,16 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 	protected List<Double> oldXThrusts = new ArrayList<Double>();
 	protected List<Double> oldYThrusts = new ArrayList<Double>();
 
+	private static boolean THRUST_ENABLED = true;
+	
+	public static boolean isThrustEnabled() {
+		return THRUST_ENABLED;
+	}
+	
+	public static void setThrustEnabled(boolean enabled) {
+		THRUST_ENABLED = enabled;
+	}
+	
 	public void resetObject() {
 		super.resetObject();
 		
@@ -121,8 +131,10 @@ public abstract class GravitoidsAutonomousObject extends GravitoidsObject {
 		
 		// Use our thrust to alter our speed
 		
-		setXSpeed(getXSpeed() + newXThrust);
-		setYSpeed(getYSpeed() + newYThrust);
+		if (THRUST_ENABLED) {
+			setXSpeed(getXSpeed() + newXThrust);
+			setYSpeed(getYSpeed() + newYThrust);
+		}
 
 		// Clamp things
 		

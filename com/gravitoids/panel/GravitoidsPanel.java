@@ -23,6 +23,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import com.gravitoids.bean.GravitoidsAutonomousObject;
 import com.gravitoids.bean.GravitoidsCircleObject;
 import com.gravitoids.bean.GravitoidsObject;
 import com.gravitoids.bean.IntelligentGravitoidsShip;
@@ -470,6 +471,10 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			GravityHelper.setGravityEnabled(!GravityHelper.isGravityEnabled());
 			
 			System.out.println("Force of gravity " + (GravityHelper.isGravityEnabled() ? "enabled" : "disabled") + ".");
+		} else if (keyCode == KeyEvent.VK_T) {
+			GravitoidsAutonomousObject.setThrustEnabled(!GravitoidsAutonomousObject.isThrustEnabled());
+			
+			System.out.println("Force of thrust " + (GravitoidsAutonomousObject.isThrustEnabled() ? "enabled" : "disabled") + ".");
 		} else if (keyCode == KeyEvent.VK_K) {
 			// Kill everyone
 			deadShips.addAll(ships);
