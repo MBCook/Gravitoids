@@ -424,11 +424,17 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			((keyCode == KeyEvent.VK_C) && e.isControlDown()) ) {
 
 			running = false;
+			
+			System.out.println("Exiting.");
 		} else if (keyCode == KeyEvent.VK_P) {
+			System.out.println(paused ? "Unpausing." : "Pausing");
+			
 			paused = !paused;
 			
 			needRerender = true;
 		} else if (keyCode == KeyEvent.VK_S) {
+			System.out.println("Step mode " + (stepMode ? "disabled" : "enabled") + ".");
+			
 			stepMode = !stepMode;
 			
 			if (stepMode) {
@@ -440,18 +446,30 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			IntelligentGravitoidsShip.setDrawMotivation(!IntelligentGravitoidsShip.isDrawMotivation());
 			
 			needRerender = true;
+			
+			System.out.println("Draw motiviation " + (IntelligentGravitoidsShip.isDrawMotivation() ? "enabled" : "disabled") + ".");
 		} else if (keyCode == KeyEvent.VK_T) {
 			IntelligentGravitoidsShip.setDrawThrust(!IntelligentGravitoidsShip.isDrawThrust());
 			
 			needRerender = true;
+			
+			System.out.println("Draw thrust " + (IntelligentGravitoidsShip.isDrawThrust() ? "enabled" : "disabled") + ".");
 		} else if (keyCode == KeyEvent.VK_G) {
 			IntelligentGravitoidsShip.setDrawGravitationalPull(!IntelligentGravitoidsShip.isDrawGravitationalPull());
 			
 			needRerender = true;
+			
+			System.out.println("Draw gravity " + (IntelligentGravitoidsShip.isDrawGravitationalPull() ? "enabled" : "disabled") + ".");
 		} else if (keyCode == KeyEvent.VK_I) {
 			drawTestShip = !drawTestShip;
 			
 			needRerender = true;
+			
+			System.out.println("Draw test ship " + (drawTestShip ? "enabled" : "disabled") + ".");
+		} else if (keyCode == KeyEvent.VK_E) {
+			GravityHelper.setGravityEnabled(!GravityHelper.isGravityEnabled());
+			
+			System.out.println("Force of gravity " + (GravityHelper.isGravityEnabled() ? "enabled" : "disabled") + ".");
 		} else if (keyCode == KeyEvent.VK_K) {
 			// Kill everyone
 			deadShips.addAll(ships);

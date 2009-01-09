@@ -33,6 +33,9 @@ import com.gravitoids.panel.GravitoidsPanel;
 
 public class GravityHelper {
 	private static GravityHelper instance = null;
+	
+	private static boolean GRAVITY_ENABLED = true;
+	
 	private double maxInfluence = 5.0d;
 	private double gravitationalConstant;
 	
@@ -45,6 +48,14 @@ public class GravityHelper {
 	
 	public GravityHelper(double gravitationalConstant) {
 		this.gravitationalConstant = gravitationalConstant;
+	}
+	
+	public static boolean isGravityEnabled() {
+		return GRAVITY_ENABLED;
+	}
+	
+	public static void setGravityEnabled(boolean enabled) {
+		GRAVITY_ENABLED = enabled;
 	}
 	
 	private void simulateGravity(GravitoidsObject one, GravitoidsObject two, boolean moveObjectTwo) {
@@ -102,18 +113,22 @@ public class GravityHelper {
 		
 		// Now set the new velocities, dividing by the mass so results are correct
 
-		one.setXGravitationalForce(one.getXGravitationalForce() + (xForce / one.getMass()));
-		one.setYGravitationalForce(one.getYGravitationalForce() + (yForce / one.getMass()));
+		one.setXGravitationalForce((xForce / one.getMass()));
+		one.setYGravitationalForce((yForce / one.getMass()));
 		
-		one.setXSpeed(one.getXSpeed() + one.getXGravitationalForce());
-		one.setYSpeed(one.getYSpeed() + one.getYGravitationalForce());
+		if (GRAVITY_ENABLED) {
+			one.setXSpeed(one.getXSpeed() + one.getXGravitationalForce());
+			one.setYSpeed(one.getYSpeed() + one.getYGravitationalForce());
+		}
 		
 		if (moveObjectTwo) {
-			two.setXGravitationalForce(two.getXGravitationalForce() + (xForce / two.getMass()));
-			two.setYGravitationalForce(two.getYGravitationalForce() + (yForce / two.getMass()));
+			two.setXGravitationalForce((xForce / two.getMass()));
+			two.setYGravitationalForce((yForce / two.getMass()));
 			
-			two.setXSpeed(two.getXSpeed() + two.getXGravitationalForce());
-			two.setYSpeed(two.getYSpeed() + two.getYGravitationalForce());
+			if (GRAVITY_ENABLED) {
+				two.setXSpeed(two.getXSpeed() + two.getXGravitationalForce());
+				two.setYSpeed(two.getYSpeed() + two.getYGravitationalForce());
+			}
 		}
 	}
 	
