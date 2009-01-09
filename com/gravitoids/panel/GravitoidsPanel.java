@@ -471,7 +471,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			GravityHelper.setGravityEnabled(!GravityHelper.isGravityEnabled());
 			
 			System.out.println("Force of gravity " + (GravityHelper.isGravityEnabled() ? "enabled" : "disabled") + ".");
-		} else if (keyCode == KeyEvent.VK_T) {
+		} else if (keyCode == KeyEvent.VK_F) {
 			GravitoidsAutonomousObject.setThrustEnabled(!GravitoidsAutonomousObject.isThrustEnabled());
 			
 			System.out.println("Force of thrust " + (GravitoidsAutonomousObject.isThrustEnabled() ? "enabled" : "disabled") + ".");
