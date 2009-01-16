@@ -70,7 +70,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 	private static final int MAX_FRAME_SKIPS = 5;		// Maximum number of frames to skip at once
 	private static final int NUM_FPS = 10;		// How many FPS we keep for calculations
 
-	private static final int NUM_SHIPS = 20;
+	private static final int NUM_SHIPS = 50;
 	
 	private static final int MAX_FRAMES_PER_TRIAL = 3600;
 	
@@ -283,14 +283,16 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 			
 			generation++;
 
-			// Whoever did best gets to automatically move on
-			
-			ships.add(deadShips.get(0));
-			
-			// Now make ~15 children by mutating the top few ships
+			// Whoever did best gets to automatically move on, 5 of those
 			
 			for (int i = 0; i < 5; i++) {
-				for (int j = 0; j < 3; j++) {
+				ships.add(deadShips.get(i));
+			}
+			
+			// Now make ~30 children by mutating the top few ships
+			
+			for (int i = 0; i < 6; i++) {
+				for (int j = 1; j < 6; j++) {
 					IntelligentGravitoidsShip igs = IntelligentGravitoidsShip.mutate(deadShips.get(i));
 					
 					igs.setName(igs.toString());
@@ -634,8 +636,9 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				
 				for (int j = 0; j < ships.size(); j++) {
 					gh.simulateGravityForOne(ships.get(j), universeObjects[i]);
-					gh.simulateGravityForOne(testObject, universeObjects[i]);
 				}
+				
+				gh.simulateGravityForOne(testObject, universeObjects[i]);
 			}
 			
 			// Make the effects of gravity known
@@ -743,6 +746,7 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 						ship.setYPosition(PANEL_HEIGHT / 2.0);
 						ship.setXSpeed(0.0);
 						ship.setYSpeed(0.0);
+						ship.resetGravitationalForce();
 					}
 					
 					prepareUniverse();
