@@ -1,7 +1,6 @@
 package com.gravitoids.helper;
 
 import com.gravitoids.bean.GravitoidsObject;
-import com.gravitoids.main.GravitoidsGame;
 import com.gravitoids.panel.GravitoidsPanel;
 
 /**
@@ -116,19 +115,9 @@ public class GravityHelper {
 		one.setXGravitationalForce((xForce / one.getMass()));
 		one.setYGravitationalForce((yForce / one.getMass()));
 		
-		if (GRAVITY_ENABLED) {
-			one.setXSpeed(one.getXSpeed() + one.getXGravitationalForce());
-			one.setYSpeed(one.getYSpeed() + one.getYGravitationalForce());
-		}
-		
 		if (moveObjectTwo) {
 			two.setXGravitationalForce((xForce / two.getMass()));
 			two.setYGravitationalForce((yForce / two.getMass()));
-			
-			if (GRAVITY_ENABLED) {
-				two.setXSpeed(two.getXSpeed() + two.getXGravitationalForce());
-				two.setYSpeed(two.getYSpeed() + two.getYGravitationalForce());
-			}
 		}
 	}
 	

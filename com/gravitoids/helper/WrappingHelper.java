@@ -99,6 +99,21 @@ public class WrappingHelper {
 			}
 		}
 		
-		return Math.atan((one.getYPosition() - theirY) / (one.getXPosition() - theirX));
+		double xDiff = one.getXPosition() - theirX;
+		double yDiff = one.getYPosition() - theirY;
+		
+		double angle = 0.0;
+		
+		if (xDiff == 0.0) {
+			if (yDiff > 0.0) {
+				angle = 1.5 * Math.PI;
+			} else {
+				angle = 0.5 * Math.PI;
+			}
+		} else {
+			angle = Math.atan(yDiff / xDiff);
+		}
+		
+		return angle;
 	}
 }

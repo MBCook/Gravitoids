@@ -638,6 +638,24 @@ public class GravitoidsPanel extends JPanel implements Runnable, KeyListener {
 				}
 			}
 			
+			// Make the effects of gravity known
+			
+			if (GravityHelper.isGravityEnabled()) {
+				for (int i = 0; i < universeObjects.length; i++) {
+					GravitoidsObject o = universeObjects[i];
+					
+					o.setXPosition(o.getXPosition() + o.getXGravitationalForce());
+					o.setYPosition(o.getYPosition() + o.getYGravitationalForce());
+				}
+				
+				for (int i = 0; i < ships.size(); i++) {
+					GravitoidsObject o = ships.get(i);
+					
+					o.setXPosition(o.getXPosition() + o.getXGravitationalForce());
+					o.setYPosition(o.getYPosition() + o.getYGravitationalForce());
+				}
+			}
+			
 			// Put them in the right spots
 			
 			for (int i = 0; i < universeObjects.length; i++) {
